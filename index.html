@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Buyers · Product Attribute Explorer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --surface2: #f8f9fb;
+    --border: #e3e6ea;
+    --border-strong: #d0d4da;
+    --accent: #f97316;
+    --accent-light: #fff5ee;
+    --accent-dark: #c2590a;
+    --accent2: #6366f1;
+    --accent2-light: #eef0ff;
+    --text: #111827;
+    --text-secondary: #374151;
+    --muted: #6b7280;
+    --muted-light: #9ca3af;
+    --danger: #ef4444;
+    --danger-light: #fef2f2;
+    --success: #10b981;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+    --radius: 8px;
+    --radius-sm: 5px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header ── */
+  header {
+    padding: 0 24px;
+    height: 56px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+  .logo-icon {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .logo span { color: var(--accent); }
+  .header-divider {
+    width: 1px; height: 20px;
+    background: var(--border);
+  }
+  .header-subtitle {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .header-stats {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hdr-stat {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .hdr-stat strong { color: var(--text); font-weight: 700; }
+  #hdr-filename {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid #fed7aa;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ── Layout ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 256px 1fr;
+    min-height: calc(100vh - 56px);
+  }
+
+  /* ── Sidebar ── */
+  sidebar {
+    display: block;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 16px 14px;
+    overflow-y: auto;
+    position: sticky;
+    top: 56px;
+    height: calc(100vh - 56px);
+  }
+  .filter-section { margin-bottom: 20px; }
+  .filter-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--muted-light);
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .filter-label-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .filter-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip {
+    padding: 4px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    transition: all 0.12s ease;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    white-space: nowrap;
+    line-height: 1.4;
+  }
+  .chip:hover { border-color: var(--border-strong); color: var(--text-secondary); background: #fff; box-shadow: var(--shadow-sm); }
+  .chip.active { background: var(--accent-light); border-color: #fed7aa; color: var(--accent-dark); font-weight: 700; }
+  .chip.cat-active { background: var(--accent2-light); border-color: #c7d2fe; color: var(--accent2); font-weight: 700; }
+  .chip.strain-active { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; font-weight: 700; }
+
+  /* Attribute group chip colors — light mode */
+  .chip[data-group="flower"].active   { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+  .chip[data-group="preroll"].active  { background: #fff7ed; border-color: #fdba74; color: #c2410c; }
+  .chip[data-group="extract"].active  { background: #faf5ff; border-color: #d8b4fe; color: #7c3aed; }
+  .chip[data-group="hardware"].active { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+  .chip[data-group="misc"].active     { background: #fdf4ff; border-color: #f0abfc; color: #a21caf; }
+
+  .filter-mode-toggle { display: flex; gap: 4px; margin-bottom: 8px; }
+  .mode-btn {
+    flex: 1; padding: 5px;
+    font-size: 11px; font-weight: 700; text-align: center;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    background: var(--surface2);
+    transition: all 0.12s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .mode-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 1px 3px rgba(249,115,22,0.3); }
+
+  .clear-btn {
+    width: 100%; padding: 7px;
+    font-size: 11px; font-weight: 600;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.12s;
+    margin-top: 6px;
+  }
+  .clear-btn:hover { border-color: #fca5a5; color: var(--danger); background: var(--danger-light); }
+
+  /* ── Main ── */
+  main { padding: 20px 24px; overflow-y: auto; background: var(--bg); }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .search-wrap {
+    flex: 1; min-width: 200px; position: relative;
+  }
+  .search-icon {
+    position: absolute; left: 11px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted-light); font-size: 13px; pointer-events: none;
+  }
+  .search-box {
+    width: 100%;
+    padding: 8px 12px 8px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-shadow: var(--shadow-sm);
+  }
+  .search-box:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(249,115,22,0.1); }
+  .search-box::placeholder { color: var(--muted-light); }
+
+  .view-toggle { display: flex; gap: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); box-shadow: var(--shadow-sm); }
+  .view-btn {
+    padding: 7px 14px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: none; border-right: 1px solid var(--border);
+    background: var(--surface); color: var(--muted);
+    transition: all 0.12s; font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .view-btn:last-child { border-right: none; }
+  .view-btn.active { background: var(--accent); color: #fff; }
+  .view-btn:hover:not(.active) { background: var(--surface2); color: var(--text); }
+
+  .result-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--muted); white-space: nowrap;
+  }
+  .result-count strong { color: var(--accent); }
+
+  .export-btn {
+    padding: 7px 14px; font-size: 12px; font-weight: 700;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text-secondary);
+    transition: all 0.12s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .export-btn:hover { background: var(--text); color: #fff; border-color: var(--text); }
+
+  /* ── Active filter pills ── */
+  .active-filters { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; min-height: 0; }
+  .active-pill {
+    display: flex; align-items: center; gap: 5px;
+    padding: 3px 8px 3px 10px;
+    border-radius: 20px; font-size: 11px; font-weight: 600;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--accent-light);
+    border: 1px solid #fed7aa;
+    color: var(--accent-dark);
+  }
+  .active-pill .remove {
+    cursor: pointer; opacity: 0.5; font-size: 10px;
+    width: 14px; height: 14px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; transition: all 0.1s;
+  }
+  .active-pill .remove:hover { opacity: 1; background: #fed7aa; }
+
+  /* ── Grid view ── */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px;
+  }
+  .product-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    transition: box-shadow 0.15s, border-color 0.15s;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+  }
+  .product-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-strong); }
+
+  .card-category {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.6px;
+    text-transform: uppercase; color: var(--muted-light);
+    margin-bottom: 5px; font-family: 'JetBrains Mono', monospace;
+  }
+  .card-name {
+    font-size: 13px; font-weight: 700; line-height: 1.4;
+    margin-bottom: 3px; color: var(--text); padding-right: 48px;
+  }
+  .card-brand {
+    font-size: 11px; color: var(--muted); margin-bottom: 10px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .card-attrs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+
+  /* ── Attribute tags — light mode vibrant ── */
+  .attr-tag {
+    padding: 2px 8px; border-radius: 20px;
+    font-size: 10px; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.2px; white-space: nowrap;
+  }
+  .attr-tag.flower   { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+  .attr-tag.preroll  { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
+  .attr-tag.extract  { background: #f3e8ff; color: #7c3aed; border: 1px solid #d8b4fe; }
+  .attr-tag.hardware { background: #dbeafe; color: #1d4ed8; border: 1px solid #93c5fd; }
+  .attr-tag.misc     { background: #fce7f3; color: #be185d; border: 1px solid #f9a8d4; }
+  .attr-tag.none     { background: var(--danger-light); color: var(--danger); border: 1px solid #fca5a5; font-style: italic; }
+
+  .card-meta {
+    display: flex; gap: 12px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--muted); border-top: 1px solid var(--border); padding-top: 9px;
+  }
+  .card-meta span strong { color: var(--text); }
+
+  .strain-badge {
+    position: absolute; top: 10px; right: 10px;
+    font-size: 9px; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 2px 7px; border-radius: 20px; letter-spacing: 0.3px;
+  }
+  .strain-badge.Sativa { background: #fef9c3; color: #a16207; border: 1px solid #fde047; }
+  .strain-badge.Indica { background: #ede9fe; color: #6d28d9; border: 1px solid #c4b5fd; }
+  .strain-badge.Hybrid { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+
+  /* ── Table view ── */
+  .products-table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; background: var(--surface); }
+  thead { background: var(--surface2); }
+  th {
+    padding: 10px 14px; text-align: left;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.6px;
+    text-transform: uppercase; color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap; cursor: pointer; user-select: none;
+  }
+  th:hover { color: var(--accent); }
+  th.sorted { color: var(--accent); }
+  td {
+    padding: 9px 14px; border-bottom: 1px solid var(--border);
+    vertical-align: middle; font-family: 'JetBrains Mono', monospace;
+    color: var(--text-secondary);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafbfc; }
+  .td-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; font-weight: 600; color: var(--text); max-width: 300px; }
+  .td-attrs { display: flex; flex-wrap: wrap; gap: 3px; }
+
+  /* ── Untagged banner ── */
+  .untagged-banner {
+    background: var(--danger-light); border: 1px solid #fca5a5;
+    border-radius: var(--radius); padding: 12px 16px;
+    margin-bottom: 14px; cursor: pointer;
+    display: flex; align-items: center; gap: 12px;
+    transition: box-shadow 0.15s;
+  }
+  .untagged-banner:hover { box-shadow: var(--shadow-md); }
+  .untagged-count { font-size: 22px; font-weight: 800; color: var(--danger); font-family: 'JetBrains Mono', monospace; }
+  .untagged-label { font-size: 13px; color: #991b1b; font-weight: 600; }
+  .untagged-sub { font-size: 11px; color: #b91c1c; margin-top: 2px; font-family: 'JetBrains Mono', monospace; opacity: 0.8; }
+  .untagged-arrow { margin-left: auto; color: var(--danger); font-size: 16px; }
+
+  /* ── Stats row ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px; margin-bottom: 14px;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 12px 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .stat-value {
+    font-size: 20px; font-weight: 800; color: var(--text);
+    font-family: 'JetBrains Mono', monospace; line-height: 1; margin-bottom: 4px;
+  }
+  .stat-label { font-size: 10px; color: var(--muted); font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; }
+
+  /* ── Group headers ── */
+  .group-section { margin-bottom: 20px; }
+  .group-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .group-header-label { font-size: 13px; font-weight: 700; color: var(--text); }
+  .group-header-count {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--muted); background: var(--border); padding: 1px 7px; border-radius: 20px;
+  }
+
+  /* ── Empty state ── */
+  .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-text { font-size: 13px; font-weight: 500; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted-light); }
+
+  /* ── Group select ── */
+  .group-select {
+    padding: 7px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer; outline: none;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.15s;
+  }
+  .group-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(249,115,22,0.1); }
+  .group-select option { background: #fff; }
+
+  /* ── Upload screen ── */
+  #drop-zone.drag-over {
+    border-color: var(--accent) !important;
+    background: var(--accent-light) !important;
+    box-shadow: 0 0 0 4px rgba(249,115,22,0.1);
+  }
+  #drop-zone:hover { border-color: var(--border-strong) !important; box-shadow: var(--shadow-md); }
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛒</div>
+    Happy<span>Buyers</span>
+  </div>
+  <div class="header-divider"></div>
+  <div class="header-subtitle">Attribute Explorer</div>
+  <div class="header-stats">
+    <div class="hdr-stat"><strong id="hdr-total">—</strong> products</div>
+    <div class="hdr-stat"><strong id="hdr-tagged">—</strong> tagged</div>
+    <div class="hdr-stat"><strong id="hdr-untagged">—</strong> untagged</div>
+    <div id="hdr-filename"></div>
+    <button class="export-btn" style="padding:5px 12px;font-size:11px" onclick="reUpload()">↑ New CSV</button>
+  </div>
+</header>
+
+<div class="layout" id="app-layout">
+  <sidebar>
+    <div class="filter-section">
+      <div class="filter-label">Filter Mode</div>
+      <div class="filter-mode-toggle">
+        <div class="mode-btn active" id="mode-and" onclick="setMode('AND')">AND (all)</div>
+        <div class="mode-btn" id="mode-or" onclick="setMode('OR')">OR (any)</div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Category</div>
+      <div class="filter-chips" id="cat-chips"></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Strain</div>
+      <div class="filter-chips" id="strain-chips"></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label" style="color:#4ade80">Flower</div>
+      <div class="filter-chips" id="attr-flower-chips"></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label" style="color:#fb923c">Preroll</div>
+      <div class="filter-chips" id="attr-preroll-chips"></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label" style="color:#a78bfa">Extracts</div>
+      <div class="filter-chips" id="attr-extract-chips"></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label" style="color:#38bdf8">Vape Hardware</div>
+      <div class="filter-chips" id="attr-hardware-chips"></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label" style="color:#f472b6">Infused</div>
+      <div class="filter-chips" id="attr-misc-chips"></div>
+    </div>
+
+    <button class="clear-btn" onclick="clearAll()">✕ Clear All Filters</button>
+  </sidebar>
+
+  <main>
+    <div class="toolbar">
+      <div class="search-wrap"><span class="search-icon">⌕</span><input class="search-box" id="search" placeholder="Search product name or brand…" oninput="render()"></div>
+      <select class="group-select" id="group-by" onchange="render()">
+        <option value="none">No grouping</option>
+        <option value="category">Group by Category</option>
+        <option value="brand_name">Group by Brand</option>
+        <option value="store_name">Group by Store</option>
+        <option value="strain_classification">Group by Strain</option>
+        <option value="attr">Group by Attribute</option>
+      </select>
+      <div class="view-toggle">
+        <button class="view-btn active" id="view-grid" onclick="setView('grid')">Grid</button>
+        <button class="view-btn" id="view-table" onclick="setView('table')">Table</button>
+      </div>
+      <span class="result-count" id="result-count"></span>
+      <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
+    </div>
+
+    <div class="active-filters" id="active-filters"></div>
+
+    <div id="untagged-alert"></div>
+
+    <div id="stats-row" class="stats-row"></div>
+
+    <div id="products-container"></div>
+  </main>
+</div>
+
+<script>
+// ── Attribute rule engine ─────────────────────────────────────────────────────
+const ATTR_GROUPS = {
+  flower:   ['Deli','Preground','Shake/Trim','Prepack'],
+  preroll:  ['Pack','Blunt','Single'],
+  extract:  ['Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe'],
+  hardware: ['Cart','AIO','Pod'],
+  misc:     ['Infused','Infused Flower'],
+};
+
+const ATTR_GROUP_MAP = {};
+Object.entries(ATTR_GROUPS).forEach(([g, attrs]) => attrs.forEach(a => ATTR_GROUP_MAP[a] = g));
+
+const ATTR_ORDER = ['Deli','Preground','Shake/Trim','Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe','Cart','AIO','Pod','Infused','Infused Flower','Pack','Prepack','Blunt','Single'];
+function sortAttrs(attrs) {
+  return [...attrs].sort((a, b) => {
+    const ai = ATTR_ORDER.indexOf(a), bi = ATTR_ORDER.indexOf(b);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1; if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
+
+function getAttributes(p) {
+  const n = p.name.toLowerCase();
+  const cat = p.category;
+  const weight = parseFloat(p.weight) || 0;
+  const attrs = [];
+
+  // FLOWER
+  if (cat === 'Flower') {
+    if (/deli|bulk/.test(n) || weight === 1) attrs.push('Deli');
+    if (/preground|pre-ground|ground|ready-to-roll|ready to roll|milled/.test(n)) attrs.push('Preground');
+    if (/shake|trim/.test(n)) attrs.push('Shake/Trim');
+    if (/infused|moonrock|moon rock|snowball|caviar|sun rock|sunrock/.test(n)) attrs.push('Infused');
+  }
+
+  // PREROLLS
+  if (cat === 'Prerolls') {
+    const packRe = /multi|pack|pck|variety|\d+pk|[2-9]x|1[0-9]x|20x|x[2-9]|x1[0-9]|x20|x25/;
+    const isPack = packRe.test(n) || weight > 3;
+    attrs.push(isPack ? 'Pack' : 'Single');
+    if (/blunt|blunts|blunto/.test(n)) attrs.push('Blunt');
+    if (/infused|moonrock|moon rock|snowball|caviar|sun rock|sunrock|tarantula|hashhole|hash hole|resin|rosin|diamond|diamonds|liquid diamond|liquid diamonds|hash|kief|persy|persie/.test(n)) attrs.push('Infused');
+  }
+
+  // VAPE HARDWARE
+  if (cat === 'Vapes') {
+    if (/cart|510/.test(n)) attrs.push('Cart');
+    {
+      const aioName = n.replace(/display/g, '');  // exclude "display" from disp match
+      if (/\baio\b|all-|all in one|disp|ready-to-use|\brtu\b|\bpen\b|traveler|wand|\btank\b|e-?bar|e bar|briq|stiq|\bvape\b/.test(aioName)) attrs.push('AIO');
+    }
+    if (/\bpod\b|reload/.test(n)) attrs.push('Pod');
+  }
+
+  // EXTRACTS (all categories)
+  if (/distillate/.test(n)) attrs.push('Distillate');
+  if (/\bcured\b/.test(n)) attrs.push('Cured');
+  if (/\blive\b/.test(n)) attrs.push('Live');
+  if (/rosin|90u|90 micron|fresh press|fresh-press|cold cure|cold-cure|cold pressed|cold-pressed|\bjam\b|solventless|hash rosin|ice water hash|persy|persie/.test(n)) attrs.push('Rosin');
+  if (/\bresin\b/.test(n)) attrs.push('Resin');
+  if (/\bhash\b|bubble hash|brick hash|temple ball|\btemple\b|moroccan|full melt|hashhole|hash hole|hashish|charas|dry sift|ice water/.test(n)) attrs.push('Hash');
+  if (/diamonds?/.test(n)) attrs.push('Diamond');
+  if (/full spectrum|\bfso\b|\bfeco\b|htfse|hcfse/.test(n)) attrs.push('Full Spectrum');
+  if (/\brso\b|rick simpson/.test(n)) attrs.push('RSO');
+  if (/\bkief\b|dry sift/.test(n)) attrs.push('Kief');
+  if (/\bsyringe\b|\bdart\b/.test(n)) attrs.push('Syringe');
+  if (/persy|persie|personal rosin/.test(n)) attrs.push('Persy');
+
+  // INFUSED (all categories — catches the literal word 'infused' anywhere)
+  if (/infused/.test(n)) attrs.push('Infused');
+
+  // INFUSED FLOWER (all)
+  if (/moonrock|moon rock|sun rock|sunrock|caviar|snowball/.test(n)) attrs.push('Infused Flower');
+
+  // PREPACK (Flower only, weight > 1g, not deli/bulk)
+  if (cat === 'Flower' && weight > 1 && !/deli|bulk/.test(n)) attrs.push('Prepack');
+
+  // MISC
+  if (/\bcbd\b|cannabidiol/.test(n)) attrs.push('CBD');
+
+  // DISTILLATE FALLBACK (Extracts only — if no extract type matched, assume distillate)
+  const extractTypes = ['Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe'];
+  if (cat === 'Extracts' && !attrs.some(a => extractTypes.includes(a))) attrs.push('Distillate');
+
+  // dedupe then sort by canonical order
+  return sortAttrs([...new Set(attrs)]);
+}
+
+// ── Load data ─────────────────────────────────────────────────────────────────
+let RAW_DATA = [];
+let activeAttrs = new Set();
+let activeCats = new Set();
+let activeStrains = new Set();
+let filterMode = 'AND';
+let currentView = 'grid';
+let sortCol = null;
+let sortDir = 1;
+
+
+// ── CSV Upload handling ───────────────────────────────────────────────────────
+function parseCSV(csv) {
+  const lines = csv.trim().split('\n');
+  const headers = [];
+  let cur = '', inQ = false;
+  for (let c of lines[0]) {
+    if (c === '"') { inQ = !inQ; continue; }
+    if (c === ',' && !inQ) { headers.push(cur.trim()); cur = ''; }
+    else cur += c;
+  }
+  headers.push(cur.trim());
+  return lines.slice(1).map(line => {
+    const vals = [];
+    cur = ''; inQ = false;
+    for (let c of line) {
+      if (c === '"') { inQ = !inQ; continue; }
+      if (c === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
+      else cur += c;
+    }
+    vals.push(cur.trim());
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (vals[i] || '').trim());
+    return obj;
+  }).filter(r => r.name && r.name.length > 1);
+}
+
+function handleFileUpload(file) {
+  if (!file) return;
+  if (!file.name.endsWith('.csv')) { alert('Please upload a .csv file'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const parsed = parseCSV(e.target.result);
+    if (!parsed.length || !parsed[0].name) {
+      alert('Could not parse CSV — make sure it has a "name" column matching the Happy Buyers export format.');
+      return;
+    }
+    RAW_DATA = parsed;
+    document.getElementById('upload-screen').style.display = 'none';
+    document.getElementById('app-layout').style.display = 'grid';
+    const total = RAW_DATA.length;
+    const tagged = RAW_DATA.filter(p => getAttributes(p).length).length;
+    document.getElementById('hdr-total').textContent = total;
+    document.getElementById('hdr-tagged').textContent = tagged;
+    document.getElementById('hdr-untagged').textContent = total - tagged;
+    document.getElementById('hdr-filename').textContent = file.name;
+    buildSidebar();
+    render();
+  };
+  reader.readAsText(file);
+}
+
+// ── Re-upload ─────────────────────────────────────────────────────────────────
+function reUpload() {
+  RAW_DATA = [];
+  activeAttrs.clear(); activeCats.clear(); activeStrains.clear();
+  document.getElementById('search').value = '';
+  document.getElementById('upload-screen').style.display = 'flex';
+  document.getElementById('app-layout').style.display = 'none';
+  document.getElementById('hdr-total').textContent = '—';
+  document.getElementById('hdr-tagged').textContent = '—';
+  document.getElementById('hdr-untagged').textContent = '—';
+  document.getElementById('hdr-filename').textContent = '';
+  document.getElementById('file-input').value = '';
+}
+
+// ── Build sidebar chips ───────────────────────────────────────────────────────
+function buildSidebar() {
+  const cats = [...new Set(RAW_DATA.map(p => p.category))].sort();
+  const strains = [...new Set(RAW_DATA.map(p => p.strain_classification).filter(Boolean))].sort();
+  document.getElementById('cat-chips').innerHTML = cats.map(c =>
+    `<div class="chip" onclick="toggleCat('${c}')" id="cat-${c.replace(/\s/g,'_')}">${c}</div>`
+  ).join('');
+  document.getElementById('strain-chips').innerHTML = strains.map(s =>
+    `<div class="chip" onclick="toggleStrain('${s}')" id="strain-${s}">${s}</div>`
+  ).join('');
+  Object.entries(ATTR_GROUPS).forEach(([group, attrs]) => {
+    const el = document.getElementById(`attr-${group}-chips`);
+    if (el) el.innerHTML = attrs.map(a =>
+      `<div class="chip" data-group="${group}" onclick="toggleAttr('${a}')" id="attr-${a.replace(/[\/\s]/g,'_')}">${a}</div>`
+    ).join('');
+  });
+}
+
+// ── Toggle functions ──────────────────────────────────────────────────────────
+function toggleAttr(a) { activeAttrs.has(a) ? activeAttrs.delete(a) : activeAttrs.add(a); updateChips(); render(); }
+function toggleCat(c)  { activeCats.has(c)  ? activeCats.delete(c)  : activeCats.add(c);  updateChips(); render(); }
+function toggleStrain(s){ activeStrains.has(s) ? activeStrains.delete(s) : activeStrains.add(s); updateChips(); render(); }
+function setMode(m) {
+  filterMode = m;
+  document.getElementById('mode-and').classList.toggle('active', m === 'AND');
+  document.getElementById('mode-or').classList.toggle('active', m === 'OR');
+  render();
+}
+function setView(v) {
+  currentView = v;
+  document.getElementById('view-grid').classList.toggle('active', v === 'grid');
+  document.getElementById('view-table').classList.toggle('active', v === 'table');
+  render();
+}
+function clearAll() {
+  activeAttrs.clear(); activeCats.clear(); activeStrains.clear();
+  document.getElementById('search').value = '';
+  updateChips(); render();
+}
+function updateChips() {
+  document.querySelectorAll('#cat-chips .chip').forEach(el => el.classList.toggle('cat-active', activeCats.has(el.textContent)));
+  document.querySelectorAll('#strain-chips .chip').forEach(el => el.classList.toggle('strain-active', activeStrains.has(el.textContent)));
+  document.querySelectorAll('[id^="attr-"]').forEach(el => {
+    if (el.id.startsWith('attr-') && el.classList.contains('chip')) el.classList.toggle('active', activeAttrs.has(el.textContent));
+  });
+}
+
+// ── Filter ────────────────────────────────────────────────────────────────────
+function getFiltered() {
+  const q = document.getElementById('search').value.toLowerCase();
+  return RAW_DATA.filter(p => {
+    const attrs = getAttributes(p);
+    if (activeCats.size && !activeCats.has(p.category)) return false;
+    if (activeStrains.size && !activeStrains.has(p.strain_classification)) return false;
+    if (q && !p.name.toLowerCase().includes(q) && !(p.brand_name||'').toLowerCase().includes(q)) return false;
+    if (activeAttrs.size) {
+      if (filterMode === 'AND') return [...activeAttrs].every(a => attrs.includes(a));
+      else return [...activeAttrs].some(a => attrs.includes(a));
+    }
+    return true;
+  });
+}
+
+// ── Active filter pills ───────────────────────────────────────────────────────
+function renderActivePills() {
+  const pills = [];
+  activeCats.forEach(c => pills.push(`<div class="active-pill" style="background:var(--accent2-light);border-color:#c7d2fe;color:var(--accent2)"><span>${c}</span><span class="remove" onclick="toggleCat('${c}')">✕</span></div>`));
+  activeStrains.forEach(s => pills.push(`<div class="active-pill" style="background:#f0fdf4;border-color:#86efac;color:#15803d"><span>${s}</span><span class="remove" onclick="toggleStrain('${s}')">✕</span></div>`));
+  activeAttrs.forEach(a => pills.push(`<div class="active-pill"><span>${a}</span><span class="remove" onclick="toggleAttr('${a}')">✕</span></div>`));
+  document.getElementById('active-filters').innerHTML = pills.join('');
+}
+
+// ── Attr tag HTML ─────────────────────────────────────────────────────────────
+function attrTag(a) {
+  const g = ATTR_GROUP_MAP[a] || 'misc';
+  return `<span class="attr-tag ${g}">${a}</span>`;
+}
+
+// ── Product card ──────────────────────────────────────────────────────────────
+function productCard(p) {
+  const attrs = getAttributes(p);
+  const strain = p.strain_classification;
+  const price = p.unit_price ? `$${parseFloat(p.unit_price).toFixed(2)}` : '—';
+  const sold = p.units_sold || '0';
+  const margin = p.average_margin_percent ? `${p.average_margin_percent}%` : '—';
+  const attrHtml = attrs.length ? attrs.map(attrTag).join('') : `<span class="attr-tag none">untagged</span>`;
+  return `<div class="product-card">
+    ${strain ? `<div class="strain-badge ${strain}">${strain}</div>` : ''}
+    <div class="card-category">${p.category} · ${p.store_name||''}</div>
+    <div class="card-name">${p.name}</div>
+    <div class="card-brand">${p.brand_name||''}</div>
+    <div class="card-attrs">${attrHtml}</div>
+    <div class="card-meta">
+      <span><strong>${price}</strong> price</span>
+      <span><strong>${sold}</strong> sold</span>
+      <span><strong>${margin}</strong> margin</span>
+    </div>
+  </div>`;
+}
+
+// ── Stats row ─────────────────────────────────────────────────────────────────
+function renderStats(filtered) {
+  const totalSold = filtered.reduce((s, p) => s + (parseFloat(p.units_sold)||0), 0);
+  const totalRev  = filtered.reduce((s, p) => s + (parseFloat(p.dollars_sold)||0), 0);
+  const margins   = filtered.filter(p => p.average_margin_percent);
+  const avgMargin = margins.length ? margins.reduce((s,p) => s + parseFloat(p.average_margin_percent), 0) / margins.length : 0;
+  const brands    = new Set(filtered.map(p => p.brand_name)).size;
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card"><div class="stat-value">${filtered.length}</div><div class="stat-label">Products</div></div>
+    <div class="stat-card"><div class="stat-value">${totalSold.toLocaleString()}</div><div class="stat-label">Units Sold</div></div>
+    <div class="stat-card"><div class="stat-value">$${Math.round(totalRev).toLocaleString()}</div><div class="stat-label">Revenue</div></div>
+    <div class="stat-card"><div class="stat-value">${avgMargin.toFixed(0)}%</div><div class="stat-label">Avg Margin</div></div>
+    <div class="stat-card"><div class="stat-value">${brands}</div><div class="stat-label">Brands</div></div>`;
+}
+
+// ── Render grid ───────────────────────────────────────────────────────────────
+function renderGrid(filtered) {
+  if (!filtered.length) return `<div class="empty"><div class="empty-icon">∅</div><div class="empty-text">No products match your filters</div></div>`;
+  const groupBy = document.getElementById('group-by').value;
+  if (groupBy === 'none') return `<div class="products-grid">${filtered.map(productCard).join('')}</div>`;
+  let groups = {};
+  if (groupBy === 'attr') {
+    filtered.forEach(p => {
+      const attrs = getAttributes(p);
+      if (!attrs.length) { (groups['⚠ Untagged'] = groups['⚠ Untagged']||[]).push(p); }
+      else attrs.forEach(a => (groups[a] = groups[a]||[]).push(p));
+    });
+  } else {
+    filtered.forEach(p => { const key = p[groupBy]||'—'; (groups[key] = groups[key]||[]).push(p); });
+  }
+  return Object.entries(groups).sort((a,b) => a[0].localeCompare(b[0])).map(([key, prods]) => `
+    <div class="group-section">
+      <div class="group-header">
+        <span class="group-header-label">${key}</span>
+        <span class="group-header-count">${prods.length}</span>
+      </div>
+      <div class="products-grid" style="border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);padding:12px;background:var(--bg);">
+        ${prods.map(productCard).join('')}
+      </div>
+    </div>`).join('');
+}
+
+// ── Render table ──────────────────────────────────────────────────────────────
+function renderTable(filtered) {
+  if (!filtered.length) return `<div class="empty"><div class="empty-icon">∅</div><div class="empty-text">No products match</div></div>`;
+  let sorted = [...filtered];
+  if (sortCol) {
+    sorted.sort((a,b) => {
+      const av = a[sortCol]||'', bv = b[sortCol]||'';
+      const an = parseFloat(av), bn = parseFloat(bv);
+      if (!isNaN(an) && !isNaN(bn)) return (an-bn)*sortDir;
+      return av.localeCompare(bv)*sortDir;
+    });
+  }
+  const cols = [
+    {key:'name',label:'Product'},{key:'category',label:'Category'},{key:'brand_name',label:'Brand'},
+    {key:'strain_classification',label:'Strain'},{key:'weight',label:'Weight'},
+    {key:'unit_price',label:'Price'},{key:'units_sold',label:'Sold'},
+    {key:'average_margin_percent',label:'Margin%'},{key:'_attrs',label:'Attributes'},
+  ];
+  return `<div class="products-table-wrap"><table>
+    <thead><tr>${cols.map(c => `<th class="${sortCol===c.key?'sorted':''}" onclick="${c.key!=='_attrs'?`sortBy('${c.key}')`:''}">${c.label}${sortCol===c.key?(sortDir===1?' ↑':' ↓'):''}</th>`).join('')}</tr></thead>
+    <tbody>${sorted.map(p => {
+      const attrs = getAttributes(p);
+      return `<tr>
+        <td class="td-name">${p.name}</td>
+        <td>${p.category}</td>
+        <td style="font-size:11px">${p.brand_name||''}</td>
+        <td>${p.strain_classification||'—'}</td>
+        <td>${p.weight}g</td>
+        <td>${p.unit_price?'$'+parseFloat(p.unit_price).toFixed(2):'—'}</td>
+        <td>${p.units_sold||'0'}</td>
+        <td>${p.average_margin_percent?p.average_margin_percent+'%':'—'}</td>
+        <td><div class="td-attrs">${attrs.length?attrs.map(attrTag).join(''):'<span class="attr-tag none">untagged</span>'}</div></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+function sortBy(col) { if (sortCol===col) sortDir*=-1; else { sortCol=col; sortDir=1; } render(); }
+
+// ── Main render ───────────────────────────────────────────────────────────────
+function render() {
+  const filtered = getFiltered();
+  const allUntagged = RAW_DATA.filter(p => !getAttributes(p).length);
+  renderActivePills();
+  renderStats(filtered);
+  document.getElementById('result-count').innerHTML = `<strong>${filtered.length}</strong> of ${RAW_DATA.length}`;
+  const showBanner = !activeAttrs.size && !activeCats.size && !activeStrains.size && !document.getElementById('search').value;
+  document.getElementById('untagged-alert').innerHTML = showBanner && allUntagged.length
+    ? `<div class="untagged-banner" onclick="showUntaggedOnly()">
+        <div><div class="untagged-count">${allUntagged.length}</div>
+          <div class="untagged-label">products have no attribute tags</div>
+          <div class="untagged-sub">Click to review</div>
+        </div><span class="untagged-arrow">→</span>
+      </div>` : '';
+  document.getElementById('products-container').innerHTML =
+    currentView === 'grid' ? renderGrid(filtered) : renderTable(filtered);
+}
+
+function showUntaggedOnly() {
+  const untagged = RAW_DATA.filter(p => !getAttributes(p).length);
+  document.getElementById('products-container').innerHTML = `
+    <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:13px;color:var(--danger);font-weight:700">⚠ ${untagged.length} untagged products</span>
+      <button class="export-btn" style="padding:5px 12px" onclick="render()">← Back</button>
+    </div>
+    <div class="products-grid">${untagged.map(productCard).join('')}</div>`;
+  document.getElementById('untagged-alert').innerHTML = '';
+  renderStats(untagged);
+}
+
+// ── Export CSV ────────────────────────────────────────────────────────────────
+function exportCSV() {
+  const filtered = getFiltered();
+  const headers = ['name','category','brand_name','store_name','strain_classification','weight','unit_price','units_sold','dollars_sold','average_margin_percent','attributes'];
+  const rows = filtered.map(p => {
+    const attrs = getAttributes(p).join('; ');
+    return headers.slice(0,-1).map(h => `"${(p[h]||'').replace(/"/g,'""')}"`).concat(`"${attrs}"`).join(',');
+  });
+  const blob = new Blob([headers.join(',')+String.fromCharCode(10)+rows.join(String.fromCharCode(10))], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'happy-buyers-attributes.csv'; a.click();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function init() {
+  // Show upload screen on load
+  document.getElementById('upload-screen').style.display = 'flex';
+  document.getElementById('app-layout').style.display = 'none';
+
+  // Drag and drop on upload zone
+  const zone = document.getElementById('drop-zone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    handleFileUpload(e.dataTransfer.files[0]);
+  });
+  document.getElementById('file-input').addEventListener('change', e => {
+    handleFileUpload(e.target.files[0]);
+  });
+}
+
+// Wait for the full DOM (including the upload screen markup below) before initializing
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+
+
+
+
+<!-- ── Upload Screen ── -->
+<div id="upload-screen" style="display:none">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px;text-align:center;background:var(--bg);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="width:36px;height:36px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;">🛒</div>
+      <div style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-0.5px;">Happy<span style="color:var(--accent);">Buyers</span></div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:48px;font-family:'JetBrains Mono',monospace;font-weight:500;">Attribute Explorer</div>
+
+    <div id="drop-zone" style="
+      width:100%;max-width:480px;
+      border:2px dashed var(--border);
+      border-radius:16px;
+      padding:56px 40px;
+      cursor:pointer;
+      transition:all 0.18s ease;
+      background:var(--surface);
+      position:relative;
+      box-shadow:var(--shadow);
+    " onclick="document.getElementById('file-input').click()">
+      <input type="file" id="file-input" accept=".csv" style="display:none">
+      <div style="width:56px;height:56px;background:var(--accent-light);border:1px solid #fed7aa;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 20px;">📂</div>
+      <div style="font-size:16px;font-weight:800;margin-bottom:6px;color:var(--text);">Drop your CSV here</div>
+      <div style="font-size:13px;color:var(--muted);font-family:'JetBrains Mono',monospace;">or click to browse files</div>
+      <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border);font-size:11px;color:var(--muted-light);font-family:'JetBrains Mono',monospace;line-height:1.8;">
+        Happy Buyers export format · processed entirely in your browser
+      </div>
+    </div>
+
+    <div style="margin-top:16px;display:flex;align-items:center;gap:16px;font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;">
+      <span style="display:flex;align-items:center;gap:4px;"><span style="color:var(--success);font-size:12px;">✓</span> Local only</span>
+      <span style="color:var(--border);">|</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="color:var(--success);font-size:12px;">✓</span> No server</span>
+      <span style="color:var(--border);">|</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="color:var(--success);font-size:12px;">✓</span> No data shared</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
