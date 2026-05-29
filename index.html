@@ -390,6 +390,20 @@
   .untagged-sub { font-size: 11px; color: #b91c1c; margin-top: 2px; font-family: 'JetBrains Mono', monospace; opacity: 0.8; }
   .untagged-arrow { margin-left: auto; color: var(--danger); font-size: 16px; }
 
+  /* ── Review banner (inferred tags) ── */
+  .review-banner {
+    background: #fffbeb; border: 1px solid #fcd34d;
+    border-radius: var(--radius); padding: 12px 16px;
+    margin-bottom: 14px; cursor: pointer;
+    display: flex; align-items: center; gap: 12px;
+    transition: box-shadow 0.15s;
+  }
+  .review-banner:hover { box-shadow: var(--shadow-md); }
+  .review-count { font-size: 22px; font-weight: 800; color: #b45309; font-family: 'JetBrains Mono', monospace; }
+  .review-label { font-size: 13px; color: #92400e; font-weight: 600; }
+  .review-sub { font-size: 11px; color: #b45309; margin-top: 2px; font-family: 'JetBrains Mono', monospace; opacity: 0.85; }
+  .review-arrow { margin-left: auto; color: #b45309; font-size: 16px; }
+
   /* ── Stats row ── */
   .stats-row {
     display: grid;
@@ -560,13 +574,13 @@ const ATTR_GROUPS = {
   preroll:  ['Pack','Blunt','Single'],
   extract:  ['Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe'],
   hardware: ['Cart','AIO','Pod'],
-  misc:     ['Infused','Infused Flower'],
+  misc:     ['Infused'],
 };
 
 const ATTR_GROUP_MAP = {};
 Object.entries(ATTR_GROUPS).forEach(([g, attrs]) => attrs.forEach(a => ATTR_GROUP_MAP[a] = g));
 
-const ATTR_ORDER = ['Deli','Preground','Shake/Trim','Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe','Cart','AIO','Pod','Infused','Infused Flower','Pack','Prepack','Blunt','Single'];
+const ATTR_ORDER = ['Deli','Preground','Shake/Trim','Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe','Cart','AIO','Pod','Infused','Pack','Prepack','Blunt','Single'];
 function sortAttrs(attrs) {
   return [...attrs].sort((a, b) => {
     const ai = ATTR_ORDER.indexOf(a), bi = ATTR_ORDER.indexOf(b);
@@ -580,11 +594,15 @@ function getAttributes(p) {
   const n = p.name.toLowerCase();
   const cat = p.category;
   const weight = parseFloat(p.weight) || 0;
-  const attrs = [];
+  let attrs = [];
+  p.__fallbacks = [];  // reset each call; recomputed fresh
 
-  // FLOWER
+  // Whether this product has a usable weight value
+  const hasWeight = p.weight !== undefined && p.weight !== null && String(p.weight).trim() !== '' && !isNaN(parseFloat(p.weight));
+
+  // FLOWER — weightless flower skips Deli / Preground / Prepack, but still gets name-based tags (Infused, etc.)
   if (cat === 'Flower') {
-    if (/deli|bulk/.test(n) || weight === 1) attrs.push('Deli');
+    if (hasWeight && (/deli|bulk/.test(n) || weight === 1)) attrs.push('Deli');
     if (/preground|pre-ground|ground|ready-to-roll|ready to roll|milled/.test(n)) attrs.push('Preground');
     if (/shake|trim/.test(n)) attrs.push('Shake/Trim');
     if (/infused|moonrock|moon rock|snowball|caviar|sun rock|sunrock/.test(n)) attrs.push('Infused');
@@ -601,12 +619,20 @@ function getAttributes(p) {
 
   // VAPE HARDWARE
   if (cat === 'Vapes') {
-    if (/cart|510/.test(n)) attrs.push('Cart');
+    // Cart: exact words only (incl. common misspellings)
+    if (/\b(cart|cartridge|cartidge|cardridge|cartigde|cartgde|cartrige|cartdridge|510)\b/.test(n)) attrs.push('Cart');
     {
       const aioName = n.replace(/display/g, '');  // exclude "display" from disp match
-      if (/\baio\b|all-|all in one|disp|ready-to-use|\brtu\b|\bpen\b|traveler|wand|\btank\b|e-?bar|e bar|briq|stiq|\bvape\b/.test(aioName)) attrs.push('AIO');
+      if (/\baio\b|all-|all in one|disp|ready-to-use|\brtu\b|\bpen\b|traveler|wand|\btank\b|e-?bar|e bar|briq|stiq/.test(aioName)) attrs.push('AIO');
     }
     if (/\bpod\b|reload/.test(n)) attrs.push('Pod');
+    // If both Cart and AIO matched, it's a disposable — keep AIO only
+    if (attrs.includes('Cart') && attrs.includes('AIO')) attrs = attrs.filter(a => a !== 'Cart');
+    // CART FALLBACK: a vape with no hardware tag defaults to Cart
+    if (!attrs.includes('Cart') && !attrs.includes('AIO') && !attrs.includes('Pod')) {
+      attrs.push('Cart');
+      if (p.__fallbacks) p.__fallbacks.push('Cart');
+    }
   }
 
   // EXTRACTS (all categories)
@@ -623,21 +649,23 @@ function getAttributes(p) {
   if (/\bsyringe\b|\bdart\b/.test(n)) attrs.push('Syringe');
   if (/persy|persie|personal rosin/.test(n)) attrs.push('Persy');
 
-  // INFUSED (all categories — literal 'infused' anywhere, plus tarantula = always infused preroll)
-  if (/infused|tarantula/.test(n)) attrs.push('Infused');
+  // INFUSED (all categories — 'infused', tarantula, and moonrock/caviar/snowball family)
+  if (/infused|tarantula|moonrock|moon rock|sun rock|sunrock|caviar|snowball/.test(n)) attrs.push('Infused');
 
-  // INFUSED FLOWER (all)
-  if (/moonrock|moon rock|sun rock|sunrock|caviar|snowball/.test(n)) attrs.push('Infused Flower');
-
-  // PREPACK (Flower only, weight > 1g, not deli/bulk)
-  if (cat === 'Flower' && weight > 1 && !/deli|bulk/.test(n)) attrs.push('Prepack');
+  // PREPACK (Flower only, has weight, > 1g, not deli/bulk)
+  if (cat === 'Flower' && hasWeight && weight > 1 && !/deli|bulk/.test(n)) attrs.push('Prepack');
+  // PREPACK (any category — literal 'prepack'/'prepacked'/'prepackaged' in name, likely miscategorized flower)
+  if (/prepack/.test(n)) attrs.push('Prepack');
 
   // MISC
   if (/\bcbd\b|cannabidiol/.test(n)) attrs.push('CBD');
 
   // DISTILLATE FALLBACK (Extracts only — if no extract type matched, assume distillate)
   const extractTypes = ['Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe'];
-  if (cat === 'Extracts' && !attrs.includes('Infused') && !attrs.some(a => extractTypes.includes(a))) attrs.push('Distillate');
+  if (cat === 'Extracts' && !attrs.includes('Infused') && !attrs.some(a => extractTypes.includes(a))) {
+    attrs.push('Distillate');
+    p.__fallbacks.push('Distillate');
+  }
 
   // dedupe then sort by canonical order
   return sortAttrs([...new Set(attrs)]);
@@ -900,20 +928,37 @@ function renderTable(filtered) {
 function sortBy(col) { if (sortCol===col) sortDir*=-1; else { sortCol=col; sortDir=1; } render(); }
 
 // ── Main render ───────────────────────────────────────────────────────────────
+function getFallbackProducts() {
+  // Products whose Cart or Distillate tag was inferred (not from a keyword in the name)
+  return RAW_DATA.filter(p => { getAttributes(p); return p.__fallbacks && p.__fallbacks.length; });
+}
+
 function render() {
   const filtered = getFiltered();
   const allUntagged = RAW_DATA.filter(p => !getAttributes(p).length);
+  const reviewProducts = getFallbackProducts();
   renderActivePills();
   renderStats(filtered);
   document.getElementById('result-count').innerHTML = `<strong>${filtered.length}</strong> of ${RAW_DATA.length}`;
   const showBanner = !activeAttrs.size && !activeCats.size && !activeStrains.size && !document.getElementById('search').value;
-  document.getElementById('untagged-alert').innerHTML = showBanner && allUntagged.length
-    ? `<div class="untagged-banner" onclick="showUntaggedOnly()">
+  let bannerHtml = '';
+  if (showBanner && allUntagged.length) {
+    bannerHtml += `<div class="untagged-banner" onclick="showUntaggedOnly()">
         <div><div class="untagged-count">${allUntagged.length}</div>
           <div class="untagged-label">products have no attribute tags</div>
           <div class="untagged-sub">Click to review</div>
         </div><span class="untagged-arrow">→</span>
-      </div>` : '';
+      </div>`;
+  }
+  if (showBanner && reviewProducts.length) {
+    bannerHtml += `<div class="review-banner" onclick="showReviewOnly()">
+        <div><div class="review-count">${reviewProducts.length}</div>
+          <div class="review-label">products have an inferred tag — review recommended</div>
+          <div class="review-sub">Cart or Distillate assumed from category, not found in the name · click to review</div>
+        </div><span class="review-arrow">→</span>
+      </div>`;
+  }
+  document.getElementById('untagged-alert').innerHTML = bannerHtml;
   document.getElementById('products-container').innerHTML =
     currentView === 'grid' ? renderGrid(filtered) : renderTable(filtered);
 }
@@ -928,6 +973,21 @@ function showUntaggedOnly() {
     <div class="products-grid">${untagged.map(productCard).join('')}</div>`;
   document.getElementById('untagged-alert').innerHTML = '';
   renderStats(untagged);
+}
+
+function showReviewOnly() {
+  const review = getFallbackProducts();
+  document.getElementById('products-container').innerHTML = `
+    <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:13px;color:#b45309;font-weight:700">⚑ ${review.length} products with an inferred tag</span>
+      <button class="export-btn" style="padding:5px 12px" onclick="render()">← Back</button>
+    </div>
+    <div class="products-grid">${review.map(p => {
+      const fb = (p.__fallbacks || []).join(', ');
+      return productCard(p).replace('</div>\n  </div>', `</div><div style="font-size:10px;color:#b45309;font-family:'JetBrains Mono',monospace;margin-top:6px;padding-top:6px;border-top:1px dashed #fcd34d;">⚑ inferred: ${fb}</div>\n  </div>`);
+    }).join('')}</div>`;
+  document.getElementById('untagged-alert').innerHTML = '';
+  renderStats(review);
 }
 
 // ── Export CSV ────────────────────────────────────────────────────────────────
