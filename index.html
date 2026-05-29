@@ -617,14 +617,14 @@ function getAttributes(p) {
   if (/\bresin\b/.test(n)) attrs.push('Resin');
   if (/\bhash\b|bubble hash|brick hash|temple ball|\btemple\b|moroccan|full melt|hashhole|hash hole|hashish|charas|dry sift|ice water/.test(n)) attrs.push('Hash');
   if (/diamonds?/.test(n)) attrs.push('Diamond');
-  if (/full spectrum|\bfso\b|\bfeco\b|htfse|hcfse/.test(n)) attrs.push('Full Spectrum');
+  if (/full spectrum|\bfso\b|\bfsho\b|\bfeco\b|htfse|hcfse/.test(n)) attrs.push('Full Spectrum');
   if (/\brso\b|rick simpson/.test(n)) attrs.push('RSO');
   if (/\bkief\b|dry sift/.test(n)) attrs.push('Kief');
   if (/\bsyringe\b|\bdart\b/.test(n)) attrs.push('Syringe');
   if (/persy|persie|personal rosin/.test(n)) attrs.push('Persy');
 
-  // INFUSED (all categories — catches the literal word 'infused' anywhere)
-  if (/infused/.test(n)) attrs.push('Infused');
+  // INFUSED (all categories — literal 'infused' anywhere, plus tarantula = always infused preroll)
+  if (/infused|tarantula/.test(n)) attrs.push('Infused');
 
   // INFUSED FLOWER (all)
   if (/moonrock|moon rock|sun rock|sunrock|caviar|snowball/.test(n)) attrs.push('Infused Flower');
@@ -637,7 +637,7 @@ function getAttributes(p) {
 
   // DISTILLATE FALLBACK (Extracts only — if no extract type matched, assume distillate)
   const extractTypes = ['Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe'];
-  if (cat === 'Extracts' && !attrs.some(a => extractTypes.includes(a))) attrs.push('Distillate');
+  if (cat === 'Extracts' && !attrs.includes('Infused') && !attrs.some(a => extractTypes.includes(a))) attrs.push('Distillate');
 
   // dedupe then sort by canonical order
   return sortAttrs([...new Set(attrs)]);
