@@ -733,13 +733,13 @@ function getAttributes(p) {
     }
   }
 
-  // INFUSED (all categories — 'infused', tarantula, and moonrock/caviar/snowball family)
-  if (/infused|tarantula|moonrock|moon rock|sun rock|sunrock|caviar|snowball/.test(n)) attrs.push('Infused');
+  // INFUSED (all categories EXCEPT Vapes — 'infused', tarantula, and moonrock/caviar/snowball family)
+  if (cat !== 'Vapes' && /infused|tarantula|moonrock|moon rock|sun rock|sunrock|caviar|snowball/.test(n)) attrs.push('Infused');
 
   // PREPACK (Flower only, has weight, > 1g, not deli/bulk)
   if (cat === 'Flower' && hasWeight && weight > 1 && !/deli|bulk/.test(n)) attrs.push('Prepack');
   // PREPACK (any category — literal 'prepack'/'prepacked'/'prepackaged' in name, likely miscategorized flower)
-  if (/prepack/.test(n)) attrs.push('Prepack');
+  if (/pre[\s-]?pack/.test(n)) attrs.push('Prepack');
 
   // MISC
   if (/\bcbd\b|cannabidiol/.test(n)) attrs.push('CBD');
