@@ -656,7 +656,7 @@ function getAttributes(p) {
 
   // FLOWER — weightless flower skips Deli / Preground / Prepack, but still gets name-based tags (Infused, etc.)
   if (cat === 'Flower') {
-    if (hasWeight && (/deli|bulk/.test(n) || weight === 1)) attrs.push('Deli');
+    if (/deli|bulk/.test(n) || (hasWeight && weight === 1)) attrs.push('Deli');
     if (/preground|pre-ground|ground|ready-to-roll|ready to roll|milled/.test(n)) attrs.push('Preground');
     if (/shake|trim/.test(n)) attrs.push('Shake/Trim');
     if (/infused|moonrock|moon rock|snowball|caviar|sun rock|sunrock/.test(n)) attrs.push('Infused');
