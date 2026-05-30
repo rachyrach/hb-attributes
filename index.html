@@ -664,8 +664,13 @@ function getAttributes(p) {
 
   // PREROLLS
   if (cat === 'Prerolls') {
-    const packRe = /multi|pack|pck|variety|\d+pk|[2-9]x|1[0-9]x|20x|x[2-9]|x1[0-9]|x20|x25/;
-    const isPack = packRe.test(n) || weight > 3;
+    const packRe = /multi|pack|pck|variety|\d+\s?pk|[2-9]\s?x|1[0-9]\s?x|20\s?x|x\s?[2-9]|x\s?1[0-9]|x\s?20|x\s?25/;
+    // "Quantity of one" indicators → force Single (e.g. 1pk, 1 pack, 1x, x1).
+    // Guarded so weight-bearing forms like "5x1g" or "2 x 1.0g" are NOT caught:
+    //   - the pk/pack forms require the 1 to be a count (not followed by a weight unit)
+    //   - the x forms require no count >=2 before the x, and the 1 not followed by a digit/g
+    const singleOne = /\b1\s?p(?:c?k|ack)\b|(?<![0-9]\s{0,2}x\s{0,2})\b1x\b(?![0-9.])|(?<![0-9]\s{0,2})\bx\s?1\b(?![0-9.])/.test(n);
+    const isPack = !singleOne && (packRe.test(n) || weight > 3);
     attrs.push(isPack ? 'Pack' : 'Single');
     if (/blunt|blunts|blunto/.test(n)) attrs.push('Blunt');
     if (/infused|infpr|\binf\b|moonrock|moon rock|snowball|caviar|sun rock|sunrock|tarantula|hashhole|hash hole|resin|rosin|diamond|diamonds|liquid diamond|liquid diamonds|hash|kief|persy|persie/.test(n)) attrs.push('Infused');
