@@ -589,6 +589,7 @@ function sortAttrs(attrs) {
 
 function getAttributes(p) {
   const n = p.name.toLowerCase();
+  const name = p.name;  // original case (for LR/CR abbreviation matching)
   const cat = p.category;
   const weight = parseFloat(p.weight) || 0;
   let attrs = [];
@@ -634,10 +635,7 @@ function getAttributes(p) {
 
   // EXTRACTS (all categories)
   if (/distillate/.test(n)) attrs.push('Distillate');
-  if (/\bcured\b/.test(n)) attrs.push('Cured');
-  if (/\blive\b/.test(n)) attrs.push('Live');
   if (/rosin|90u|90 micron|fresh press|fresh-press|cold cure|cold-cure|cold pressed|cold-pressed|\bjam\b|solventless|hash rosin|ice water hash|persy|persie/.test(n)) attrs.push('Rosin');
-  if (/\bresin\b/.test(n)) attrs.push('Resin');
   if (/\bhash\b|bubble hash|brick hash|temple ball|\btemple\b|moroccan|full melt|hashhole|hash hole|hashish|charas|dry sift|ice water/.test(n)) attrs.push('Hash');
   if (/diamonds?/.test(n)) attrs.push('Diamond');
   if (/full spectrum|\bfso\b|\bfsho\b|\bfeco\b|htfse|hcfse/.test(n)) attrs.push('Full Spectrum');
@@ -645,6 +643,39 @@ function getAttributes(p) {
   if (/\bkief\b|dry sift/.test(n)) attrs.push('Kief');
   if (/\bsyringe\b|\bdart\b/.test(n)) attrs.push('Syringe');
   if (/persy|persie|personal rosin/.test(n)) attrs.push('Persy');
+
+  // ============================================================
+  //  LIVE / CURED / RESIN qualifier logic (runs AFTER Rosin/Hash/Diamond/Distillate)
+  //  Single source of truth for Live, Cured, and texture-inferred Resin tags.
+  // ============================================================
+  const TEXTURE       = /badder|budder|batter|shatter|wax|sauce|sugar|crumble/;
+  const isExtractCat  = ['Vapes', 'Extracts', 'Prerolls'].includes(cat);
+  const hasLive       = /\blive\b/.test(n);
+  const hasCured      = /\bcured\b/.test(n);
+  const hasResinWord  = /resin/.test(n);
+  // Words that suppress the texture→Resin inference (product is rosin/hash/diamond, not resin)
+  const resinSuppressor = /rosin|hash|\bjam\b|diamond/;
+  const EXTRACT_TAGS  = ['Rosin','Hash','Resin','Diamond','Distillate','Persy','RSO','Kief'];
+  const hasExtractTag = () => attrs.some(t => EXTRACT_TAGS.includes(t));
+  // Resin applies when "resin" is written, OR a texture is present with no suppressing word
+  const wantsResin = hasResinWord || (TEXTURE.test(n) && !resinSuppressor.test(n));
+  if (isExtractCat) {
+    if (hasLive) {
+      attrs.push('Live');
+      if (wantsResin) attrs.push('Resin');
+    }
+    else if (hasCured) {
+      attrs.push('Cured');
+      if (wantsResin) attrs.push('Resin');
+    }
+    // LR / CR abbreviations — only if no extract tag matched yet
+    else if (/\bLR\b/.test(name) && !hasExtractTag()) {
+      attrs.push('Live', 'Resin');
+    }
+    else if (/\bCR\b/.test(name) && !hasExtractTag()) {
+      attrs.push('Cured', 'Resin');
+    }
+  }
 
   // INFUSED (all categories — 'infused', tarantula, and moonrock/caviar/snowball family)
   if (/infused|tarantula|moonrock|moon rock|sun rock|sunrock|caviar|snowball/.test(n)) attrs.push('Infused');
