@@ -466,6 +466,55 @@
     box-shadow: 0 0 0 4px rgba(249,115,22,0.1);
   }
   #drop-zone:hover { border-color: var(--border-strong) !important; box-shadow: var(--shadow-md); }
+
+  /* ── Product Lines view ── */
+  .pl-review-section { margin-bottom: 20px; }
+  .pl-review-header {
+    padding: 10px 14px; border: 1px solid;
+    border-radius: var(--radius) var(--radius) 0 0;
+    font-size: 13px; font-weight: 700;
+  }
+  .pl-review-card {
+    background: var(--surface); border: 1px solid var(--border); border-top: none;
+    padding: 12px 14px;
+  }
+  .pl-review-card:last-child { border-radius: 0 0 var(--radius) var(--radius); }
+  .pl-review-meta {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--muted); font-weight: 600; margin-bottom: 10px;
+  }
+  .pl-review-groups { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pl-mini-group {
+    flex: 1; min-width: 200px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px;
+  }
+  .pl-mini-tags, .pl-mini-cat { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; font-weight: 700; font-size: 12px; }
+  .pl-mini-count {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--muted); margin-bottom: 6px;
+  }
+  .pl-mini-names { font-size: 11px; color: var(--text-secondary); line-height: 1.6; }
+  .pl-mini-names div { padding: 1px 0; }
+
+  .pl-line-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px;
+    box-shadow: var(--shadow-sm);
+  }
+  .pl-line-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .pl-line-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .pl-line-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .pl-line-stats {
+    margin-left: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--muted);
+  }
+  .pl-line-products { display: flex; flex-wrap: wrap; gap: 5px; }
+  .pl-product-chip {
+    font-size: 11px; padding: 3px 8px; border-radius: 20px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-secondary); font-family: 'JetBrains Mono', monospace;
+  }
 </style>
 
 </head>
@@ -552,6 +601,7 @@
       </div>
       <span class="result-count" id="result-count"></span>
       <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
+      <button class="export-btn" id="gen-lines-btn" style="background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700;" onclick="generateProductLines()">⊞ Generate Product Lines</button>
     </div>
 
     <div class="active-filters" id="active-filters"></div>
@@ -635,7 +685,7 @@ function getAttributes(p) {
 
   // EXTRACTS (all categories)
   if (/distillate/.test(n)) attrs.push('Distillate');
-  if (/rosin|90u|90 micron|fresh press|fresh-press|cold cure|cold-cure|cold pressed|cold-pressed|\bjam\b|solventless|hash rosin|ice water hash|persy|persie/.test(n)) attrs.push('Rosin');
+  if (/rosin|90u|90 micron|fresh press|fresh-press|cold cure|cold-cure|cold pressed|cold-pressed|solventless|hash rosin|ice water hash|persy|persie/.test(n)) attrs.push('Rosin');
   if (/\bhash\b|bubble hash|brick hash|temple ball|\btemple\b|moroccan|full melt|hashhole|hash hole|hashish|charas|dry sift|ice water/.test(n)) attrs.push('Hash');
   if (/diamonds?/.test(n)) attrs.push('Diamond');
   if (/full spectrum|\bfso\b|\bfsho\b|\bfeco\b|htfse|hcfse/.test(n)) attrs.push('Full Spectrum');
@@ -654,7 +704,7 @@ function getAttributes(p) {
   const hasCured      = /\bcured\b/.test(n);
   const hasResinWord  = /resin/.test(n);
   // Words that suppress the texture→Resin inference (product is rosin/hash/diamond, not resin)
-  const resinSuppressor = /rosin|hash|\bjam\b|diamond/;
+  const resinSuppressor = /rosin|hash|diamond/;
   const EXTRACT_TAGS  = ['Rosin','Hash','Resin','Diamond','Distillate','Persy','RSO','Kief'];
   const hasExtractTag = () => attrs.some(t => EXTRACT_TAGS.includes(t));
   // Resin applies when "resin" is written, OR a texture is present with no suppressing word
@@ -764,6 +814,7 @@ function handleFileUpload(file) {
 // ── Re-upload ─────────────────────────────────────────────────────────────────
 function reUpload() {
   RAW_DATA = [];
+  plViewActive = false;
   activeAttrs.clear(); activeCats.clear(); activeStrains.clear();
   document.getElementById('search').value = '';
   document.getElementById('upload-screen').style.display = 'flex';
@@ -1016,6 +1067,231 @@ function showReviewOnly() {
     }).join('')}</div>`;
   document.getElementById('untagged-alert').innerHTML = '';
   renderStats(review);
+}
+
+// ============================================================
+//  PRODUCT LINES — grouping + merge-candidate review
+//  Product Line = Brand + Category + Weight + [exact Tag Set]
+// ============================================================
+let plViewActive = false;
+let plSubView = 'all';  // 'all' or 'review'
+
+// Hash is additive (merges across) UNLESS it's the only tag.
+// CBD is excluded from grouping entirely (stripped in buildProductLines), so it's not listed here.
+const ADDITIVE_TAGS = ['Hash'];
+
+function tagSetKey(attrs) {
+  return [...attrs].sort().join('|');
+}
+
+function buildProductLines() {
+  // Group by Brand + Category + Weight + exact tag set (CBD ignored for grouping)
+  const groups = {};
+  RAW_DATA.forEach(p => {
+    const allAttrs = getAttributes(p);
+    const groupAttrs = allAttrs.filter(a => a !== 'CBD');  // CBD never affects grouping
+    const brand = (p.brand_name || '—').trim();
+    const cat = (p.category || '—').trim();
+    const weight = (p.weight || '—').toString().trim();
+    const key = [brand, cat, weight, tagSetKey(groupAttrs)].join('§');
+    if (!groups[key]) groups[key] = { brand, cat, weight, attrs: sortAttrs(groupAttrs), products: [] };
+    groups[key].products.push(p);
+  });
+  const lines = Object.values(groups);
+  lines.forEach(l => l.name = productLineName(l));
+  return lines;
+}
+
+// Group name: [Brand] - [Category] - [tag+tag+tag] - [weight]  (middle omitted if untagged)
+function productLineName(line) {
+  const w = line.weight && line.weight !== '—' ? line.weight + 'g' : line.weight;
+  const parts = [line.brand, line.cat];
+  if (line.attrs.length) parts.push(line.attrs.join(' '));
+  parts.push(w);
+  return parts.join(' - ');
+}
+
+// Returns the "core" tag set — additive tags removed, UNLESS removing them empties the set
+function coreTags(attrs) {
+  const core = attrs.filter(a => !ADDITIVE_TAGS.includes(a));
+  return core.length ? core : [...attrs];  // if only additive tags, they ARE the core
+}
+
+// Find merge candidates: groups sharing Brand+Cat+Weight + same CORE tags,
+// differing only by additive tags (Hash/CBD)
+function findAdditiveMergeCandidates(lines) {
+  const buckets = {};
+  lines.forEach((line, i) => {
+    const coreKey = [line.brand, line.cat, line.weight, tagSetKey(coreTags(line.attrs))].join('§');
+    (buckets[coreKey] = buckets[coreKey] || []).push(i);
+  });
+  // Only keep buckets with >1 distinct group (i.e. genuinely different tag sets that share a core)
+  return Object.values(buckets)
+    .filter(idxs => idxs.length > 1)
+    .map(idxs => idxs.map(i => lines[i]));
+}
+
+// Find miscategorized singletons: a 1-product group that matches another group
+// on Brand + Weight + exact Tags but differs only by Category
+function findMiscategorizedSingletons(lines) {
+  const candidates = [];
+  const singletons = lines.filter(l => l.products.length === 1);
+  singletons.forEach(s => {
+    const matches = lines.filter(other =>
+      other !== s &&
+      other.brand === s.brand &&
+      other.weight === s.weight &&
+      tagSetKey(other.attrs) === tagSetKey(s.attrs) &&
+      other.cat !== s.cat
+    );
+    if (matches.length) candidates.push({ singleton: s, matches });
+  });
+  return candidates;
+}
+
+function generateProductLines() {
+  if (!RAW_DATA.length) return;
+  plViewActive = true;
+  plSubView = 'all';
+  renderProductLines();
+}
+
+function setPlSubView(v) {
+  plSubView = v;
+  renderProductLines();
+}
+
+function exitProductLines() {
+  plViewActive = false;
+  render();
+}
+
+function attrTagsHtml(attrs) {
+  return attrs.length ? attrs.map(attrTag).join('') : '<span class="attr-tag none">no tags</span>';
+}
+
+function renderProductLines() {
+  const lines = buildProductLines();
+  const additive = findAdditiveMergeCandidates(lines);
+  const miscat = findMiscategorizedSingletons(lines);
+
+  const singletonCount = lines.filter(l => l.products.length === 1).length;
+
+  // Hide the standard filter/stat UI elements
+  document.getElementById('untagged-alert').innerHTML = '';
+  document.getElementById('active-filters').innerHTML = '';
+
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card"><div class="stat-value">${lines.length}</div><div class="stat-label">Product Lines</div></div>
+    <div class="stat-card"><div class="stat-value">${RAW_DATA.length}</div><div class="stat-label">Products</div></div>
+    <div class="stat-card"><div class="stat-value">${singletonCount}</div><div class="stat-label">Single-Product Lines</div></div>
+    <div class="stat-card" style="border-color:#fcd34d;background:#fffbeb;"><div class="stat-value" style="color:#b45309;">${additive.length}</div><div class="stat-label">Additive Merge Reviews</div></div>
+    <div class="stat-card" style="border-color:#fca5a5;background:#fef2f2;"><div class="stat-value" style="color:var(--danger);">${miscat.length}</div><div class="stat-label">Miscategorized Reviews</div></div>`;
+
+  document.getElementById('result-count').innerHTML = `<strong>${lines.length}</strong> product lines`;
+
+  const reviewCount = additive.length + miscat.length;
+  let html = `<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <span style="font-size:15px;font-weight:800;color:var(--text);">Product Lines</span>
+    <button class="export-btn" style="padding:5px 12px" onclick="exitProductLines()">← Back to products</button>
+    <div class="view-toggle" style="margin-left:8px;">
+      <button class="view-btn ${plSubView==='all'?'active':''}" onclick="setPlSubView('all')">All Lines (${lines.length})</button>
+      <button class="view-btn ${plSubView==='review'?'active':''}" onclick="setPlSubView('review')">Needs Review (${reviewCount})</button>
+    </div>
+    <button class="export-btn" style="padding:5px 12px" onclick="exportProductLines()">↓ Export Lines CSV</button>
+  </div>`;
+
+  if (plSubView === 'review') {
+
+  // ── Review section: additive merge candidates ──
+  if (additive.length) {
+    html += `<div class="pl-review-section">
+      <div class="pl-review-header" style="background:#fffbeb;border-color:#fcd34d;color:#92400e;">
+        ⚑ ${additive.length} potential merge${additive.length>1?'s':''} — same brand/category/weight, differ only by Hash/CBD
+      </div>`;
+    additive.forEach(groupSet => {
+      const first = groupSet[0];
+      html += `<div class="pl-review-card">
+        <div class="pl-review-meta">${first.brand} · ${first.cat} · ${first.weight}g</div>
+        <div class="pl-review-groups">`;
+      groupSet.forEach(line => {
+        html += `<div class="pl-mini-group">
+          <div class="pl-mini-tags">${attrTagsHtml(line.attrs)}</div>
+          <div class="pl-mini-count">${line.products.length} product${line.products.length>1?'s':''}</div>
+          <div class="pl-mini-names">${line.products.map(p => `<div>${p.name}</div>`).join('')}</div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    });
+    html += `</div>`;
+  }
+
+  // ── Review section: miscategorized singletons ──
+  if (miscat.length) {
+    html += `<div class="pl-review-section">
+      <div class="pl-review-header" style="background:#fef2f2;border-color:#fca5a5;color:#991b1b;">
+        ⚑ ${miscat.length} possible miscategorization${miscat.length>1?'s':''} — single product matches another line on everything but category
+      </div>`;
+    miscat.forEach(({singleton, matches}) => {
+      html += `<div class="pl-review-card">
+        <div class="pl-review-meta">${singleton.brand} · ${singleton.weight}g · [${singleton.attrs.join(', ')||'no tags'}]</div>
+        <div class="pl-review-groups">
+          <div class="pl-mini-group" style="border-color:#fca5a5;">
+            <div class="pl-mini-cat" style="color:var(--danger);">${singleton.cat} (this one)</div>
+            <div class="pl-mini-names">${singleton.products.map(p => `<div>${p.name}</div>`).join('')}</div>
+          </div>`;
+      matches.forEach(m => {
+        html += `<div class="pl-mini-group">
+          <div class="pl-mini-cat">${m.cat}</div>
+          <div class="pl-mini-count">${m.products.length} product${m.products.length>1?'s':''}</div>
+          <div class="pl-mini-names">${m.products.slice(0,4).map(p => `<div>${p.name}</div>`).join('')}${m.products.length>4?`<div>+${m.products.length-4} more</div>`:''}</div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    });
+    html += `</div>`;
+  }
+
+    // Empty state for review tab
+    if (!additive.length && !miscat.length) {
+      html += `<div class="empty"><div class="empty-icon">✓</div><div class="empty-text">No product lines need review — everything looks clean.</div></div>`;
+    }
+  } else {
+  // ── All product lines ──
+  const sorted = [...lines].sort((a,b) =>
+    a.brand.localeCompare(b.brand) || a.cat.localeCompare(b.cat) ||
+    (parseFloat(a.weight)||0)-(parseFloat(b.weight)||0) || a.attrs.join().localeCompare(b.attrs.join()));
+
+  sorted.forEach(line => {
+    const totalSold = line.products.reduce((s,p)=>s+(parseFloat(p.units_sold)||0),0);
+    const totalRev = line.products.reduce((s,p)=>s+(parseFloat(p.dollars_sold)||0),0);
+    html += `<div class="pl-line-card">
+      <div class="pl-line-head">
+        <span class="pl-line-title">${line.name}</span>
+        <span class="pl-line-tags">${attrTagsHtml(line.attrs)}</span>
+        <span class="pl-line-stats">${line.products.length} SKU${line.products.length>1?'s':''} · ${totalSold.toLocaleString()} sold · $${Math.round(totalRev).toLocaleString()}</span>
+      </div>
+      <div class="pl-line-products">${line.products.map(p=>`<span class="pl-product-chip">${p.name}</span>`).join('')}</div>
+    </div>`;
+  });
+  }
+
+  document.getElementById('products-container').innerHTML = html;
+}
+
+function exportProductLines() {
+  const lines = buildProductLines();
+  const headers = ['product_line','brand','category','weight','tags','sku_count','units_sold','dollars_sold','product_names'];
+  const rows = lines.map(l => {
+    const sold = l.products.reduce((s,p)=>s+(parseFloat(p.units_sold)||0),0);
+    const rev = l.products.reduce((s,p)=>s+(parseFloat(p.dollars_sold)||0),0);
+    const names = l.products.map(p=>p.name).join(' ;; ');
+    return [l.name, l.brand, l.cat, l.weight, l.attrs.join('; '), l.products.length, sold, rev, names]
+      .map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');
+  });
+  const blob = new Blob([headers.join(',')+String.fromCharCode(10)+rows.join(String.fromCharCode(10))], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'happy-buyers-product-lines.csv'; a.click();
 }
 
 // ── Export CSV ────────────────────────────────────────────────────────────────
