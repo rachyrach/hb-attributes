@@ -993,10 +993,11 @@ function renderTable(filtered) {
     });
   }
   const cols = [
-    {key:'name',label:'Product'},{key:'category',label:'Category'},{key:'brand_name',label:'Brand'},
+    {key:'name',label:'Product'},{key:'_attrs',label:'Attributes'},
+    {key:'category',label:'Category'},{key:'brand_name',label:'Brand'},
     {key:'strain_classification',label:'Strain'},{key:'weight',label:'Weight'},
     {key:'unit_price',label:'Price'},{key:'units_sold',label:'Sold'},
-    {key:'average_margin_percent',label:'Margin%'},{key:'_attrs',label:'Attributes'},
+    {key:'average_margin_percent',label:'Margin%'},
   ];
   return `<div class="products-table-wrap"><table>
     <thead><tr>${cols.map(c => `<th class="${sortCol===c.key?'sorted':''}" onclick="${c.key!=='_attrs'?`sortBy('${c.key}')`:''}">${c.label}${sortCol===c.key?(sortDir===1?' ↑':' ↓'):''}</th>`).join('')}</tr></thead>
@@ -1004,6 +1005,7 @@ function renderTable(filtered) {
       const attrs = getAttributes(p);
       return `<tr>
         <td class="td-name">${p.name}</td>
+        <td><div class="td-attrs">${attrs.length?attrs.map(attrTag).join(''):'<span class="attr-tag none">untagged</span>'}</div></td>
         <td>${p.category}</td>
         <td style="font-size:11px">${p.brand_name||''}</td>
         <td>${p.strain_classification||'—'}</td>
@@ -1011,7 +1013,6 @@ function renderTable(filtered) {
         <td>${p.unit_price?'$'+parseFloat(p.unit_price).toFixed(2):'—'}</td>
         <td>${p.units_sold||'0'}</td>
         <td>${p.average_margin_percent?p.average_margin_percent+'%':'—'}</td>
-        <td><div class="td-attrs">${attrs.length?attrs.map(attrTag).join(''):'<span class="attr-tag none">untagged</span>'}</div></td>
       </tr>`;
     }).join('')}</tbody>
   </table></div>`;
