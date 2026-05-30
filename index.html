@@ -627,7 +627,7 @@ const ATTR_GROUPS = {
 const ATTR_GROUP_MAP = {};
 Object.entries(ATTR_GROUPS).forEach(([g, attrs]) => attrs.forEach(a => ATTR_GROUP_MAP[a] = g));
 
-const ATTR_ORDER = ['Deli','Preground','Shake/Trim','Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe','Cart','AIO','Pod','Infused','Pack','Prepack','Blunt','Single'];
+const ATTR_ORDER = ['Persy','Deli','Preground','Shake/Trim','Distillate','Cured','Live','Full Spectrum','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe','Cart','AIO','Pod','Infused','Pack','Prepack','Blunt','Single'];
 function sortAttrs(attrs) {
   return [...attrs].sort((a, b) => {
     const ai = ATTR_ORDER.indexOf(a), bi = ATTR_ORDER.indexOf(b);
@@ -738,9 +738,9 @@ function getAttributes(p) {
   // MISC
   if (/\bcbd\b|cannabidiol/.test(n)) attrs.push('CBD');
 
-  // DISTILLATE FALLBACK (Extracts only — if no extract type matched, assume distillate)
+  // DISTILLATE FALLBACK (Extracts & Vapes — both contain an extract; if none matched, assume distillate)
   const extractTypes = ['Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe'];
-  if (cat === 'Extracts' && !attrs.includes('Infused') && !attrs.some(a => extractTypes.includes(a))) {
+  if ((cat === 'Extracts' || cat === 'Vapes') && !attrs.includes('Infused') && !attrs.some(a => extractTypes.includes(a))) {
     attrs.push('Distillate');
     p.__fallbacks.push('Distillate');
   }
