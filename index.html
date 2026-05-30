@@ -13,18 +13,24 @@
     --surface2: #f8f9fb;
     --border: #e3e6ea;
     --border-strong: #d0d4da;
-    --accent: #f97316;
-    --accent-light: #fff5ee;
-    --accent-dark: #c2590a;
+    --accent: #12324C;          /* HCA navy 800 — primary */
+    --accent-light: #F1F5F8;    /* HCA navy 100 — soft fill */
+    --accent-dark: #041E39;     /* HCA navy 900 — deepest */
+    --accent-border: #C9D7E4;   /* HCA navy 300 — soft border */
     --accent2: #6366f1;
     --accent2-light: #eef0ff;
-    --text: #111827;
-    --text-secondary: #374151;
-    --muted: #6b7280;
-    --muted-light: #9ca3af;
+    --green: #00C25E;           /* HCA green 500 — secondary accent */
+    --green-light: #EBFFEE;     /* HCA green 50 */
+    --green-mid: #4DE56B;       /* HCA green 400 */
+    --green-dark: #00612F;      /* HCA green 800 */
+    --green-border: #AEF9B8;    /* HCA green 200 */
+    --text: #041E39;            /* HCA navy 900 for body text */
+    --text-secondary: #365068;  /* HCA navy 700 */
+    --muted: #506C87;           /* HCA navy 600 */
+    --muted-light: #7892AB;     /* HCA navy 500 */
     --danger: #ef4444;
     --danger-light: #fef2f2;
-    --success: #10b981;
+    --success: #00C25E;
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
     --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
     --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
@@ -106,7 +112,7 @@
     background: var(--accent-light);
     padding: 4px 10px;
     border-radius: 20px;
-    border: 1px solid #fed7aa;
+    border: 1px solid var(--accent-border);
     max-width: 220px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -166,7 +172,7 @@
     line-height: 1.4;
   }
   .chip:hover { border-color: var(--border-strong); color: var(--text-secondary); background: #fff; box-shadow: var(--shadow-sm); }
-  .chip.active { background: var(--accent-light); border-color: #fed7aa; color: var(--accent-dark); font-weight: 700; }
+  .chip.active { background: var(--accent-light); border-color: var(--accent-border); color: var(--accent-dark); font-weight: 700; }
   .chip.cat-active { background: var(--accent2-light); border-color: #c7d2fe; color: var(--accent2); font-weight: 700; }
   .chip.strain-active { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; font-weight: 700; }
 
@@ -189,7 +195,7 @@
     transition: all 0.12s;
     font-family: 'Plus Jakarta Sans', sans-serif;
   }
-  .mode-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 1px 3px rgba(249,115,22,0.3); }
+  .mode-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 1px 3px rgba(18,50,76,0.25); }
 
   .clear-btn {
     width: 100%; padding: 7px;
@@ -234,7 +240,7 @@
     transition: border-color 0.15s, box-shadow 0.15s;
     box-shadow: var(--shadow-sm);
   }
-  .search-box:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(249,115,22,0.1); }
+  .search-box:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(18,50,76,0.12); }
   .search-box::placeholder { color: var(--muted-light); }
 
   .view-toggle { display: flex; gap: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); box-shadow: var(--shadow-sm); }
@@ -252,7 +258,7 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px; color: var(--muted); white-space: nowrap;
   }
-  .result-count strong { color: var(--accent); }
+  .result-count strong { color: var(--green-dark); }
 
   .export-btn {
     padding: 7px 14px; font-size: 12px; font-weight: 700;
@@ -275,16 +281,16 @@
     padding: 3px 8px 3px 10px;
     border-radius: 20px; font-size: 11px; font-weight: 600;
     font-family: 'Plus Jakarta Sans', sans-serif;
-    background: var(--accent-light);
-    border: 1px solid #fed7aa;
-    color: var(--accent-dark);
+    background: var(--green-light);
+    border: 1px solid var(--green-border);
+    color: var(--green-dark);
   }
   .active-pill .remove {
     cursor: pointer; opacity: 0.5; font-size: 10px;
     width: 14px; height: 14px; display: flex; align-items: center; justify-content: center;
     border-radius: 50%; transition: all 0.1s;
   }
-  .active-pill .remove:hover { opacity: 1; background: #fed7aa; }
+  .active-pill .remove:hover { opacity: 1; background: var(--green-border); }
 
   /* ── Grid view ── */
   .products-grid {
@@ -413,7 +419,7 @@
     box-shadow: var(--shadow-sm);
   }
   .stat-value {
-    font-size: 20px; font-weight: 800; color: var(--text);
+    font-size: 20px; font-weight: 800; color: var(--green-dark);
     font-family: 'JetBrains Mono', monospace; line-height: 1; margin-bottom: 4px;
   }
   .stat-label { font-size: 10px; color: var(--muted); font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; }
@@ -456,14 +462,14 @@
     box-shadow: var(--shadow-sm);
     transition: border-color 0.15s;
   }
-  .group-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(249,115,22,0.1); }
+  .group-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(18,50,76,0.12); }
   .group-select option { background: #fff; }
 
   /* ── Upload screen ── */
   #drop-zone.drag-over {
     border-color: var(--accent) !important;
     background: var(--accent-light) !important;
-    box-shadow: 0 0 0 4px rgba(249,115,22,0.1);
+    box-shadow: 0 0 0 4px rgba(0,194,94,0.18);
   }
   #drop-zone:hover { border-color: var(--border-strong) !important; box-shadow: var(--shadow-md); }
 
@@ -586,7 +592,7 @@
 
   <main>
     <div class="toolbar">
-      <div class="search-wrap"><span class="search-icon">⌕</span><input class="search-box" id="search" placeholder="Search product name or brand…" oninput="render()"></div>
+      <div class="search-wrap"><span class="search-icon">⌕</span><input class="search-box" id="search" placeholder="Search product name or brand…" oninput="routeRender()"></div>
       <select class="group-select" id="group-by" onchange="render()">
         <option value="none">No grouping</option>
         <option value="category">Group by Category</option>
@@ -662,7 +668,7 @@ function getAttributes(p) {
     const isPack = packRe.test(n) || weight > 3;
     attrs.push(isPack ? 'Pack' : 'Single');
     if (/blunt|blunts|blunto/.test(n)) attrs.push('Blunt');
-    if (/infused|moonrock|moon rock|snowball|caviar|sun rock|sunrock|tarantula|hashhole|hash hole|resin|rosin|diamond|diamonds|liquid diamond|liquid diamonds|hash|kief|persy|persie/.test(n)) attrs.push('Infused');
+    if (/infused|infpr|\binf\b|moonrock|moon rock|snowball|caviar|sun rock|sunrock|tarantula|hashhole|hash hole|resin|rosin|diamond|diamonds|liquid diamond|liquid diamonds|hash|kief|persy|persie/.test(n)) attrs.push('Infused');
   }
 
   // VAPE HARDWARE
@@ -686,7 +692,7 @@ function getAttributes(p) {
   // EXTRACTS (all categories)
   if (/distillate/.test(n)) attrs.push('Distillate');
   if (/rosin|90u|90 micron|fresh press|fresh-press|cold cure|cold-cure|cold pressed|cold-pressed|solventless|hash rosin|ice water hash|persy|persie/.test(n)) attrs.push('Rosin');
-  if (/\bhash\b|bubble hash|brick hash|temple ball|\btemple\b|moroccan|full melt|hashhole|hash hole|hashish|charas|dry sift|ice water/.test(n)) attrs.push('Hash');
+  if (cat !== 'Flower' && /\bhash\b|bubble hash|brick hash|temple ball|\btemple\b|moroccan|full melt|hashhole|hash hole|hashish|charas|dry sift|ice water/.test(n)) attrs.push('Hash');
   if (/diamonds?/.test(n)) attrs.push('Diamond');
   if (/full spectrum|\bfso\b|\bfsho\b|\bfeco\b|htfse|hcfse/.test(n)) attrs.push('Full Spectrum');
   if (/\brso\b|rick simpson/.test(n)) attrs.push('RSO');
@@ -719,10 +725,10 @@ function getAttributes(p) {
       if (wantsResin) attrs.push('Resin');
     }
     // LR / CR abbreviations — only if no extract tag matched yet
-    else if (/\bLR\b/.test(name) && !hasExtractTag()) {
+    else if (/\bLR\b|\bL\.R\.?/i.test(name) && !hasExtractTag()) {
       attrs.push('Live', 'Resin');
     }
-    else if (/\bCR\b/.test(name) && !hasExtractTag()) {
+    else if (/\bCR\b|\bC\.R\.?/i.test(name) && !hasExtractTag()) {
       attrs.push('Cured', 'Resin');
     }
   }
@@ -845,9 +851,15 @@ function buildSidebar() {
 }
 
 // ── Toggle functions ──────────────────────────────────────────────────────────
-function toggleAttr(a) { activeAttrs.has(a) ? activeAttrs.delete(a) : activeAttrs.add(a); updateChips(); render(); }
-function toggleCat(c)  { activeCats.has(c)  ? activeCats.delete(c)  : activeCats.add(c);  updateChips(); render(); }
-function toggleStrain(s){ activeStrains.has(s) ? activeStrains.delete(s) : activeStrains.add(s); updateChips(); render(); }
+function toggleAttr(a) { activeAttrs.has(a) ? activeAttrs.delete(a) : activeAttrs.add(a); updateChips(); routeRender(); }
+function toggleCat(c)  { activeCats.has(c)  ? activeCats.delete(c)  : activeCats.add(c);  updateChips(); routeRender(); }
+function toggleStrain(s){ activeStrains.has(s) ? activeStrains.delete(s) : activeStrains.add(s); updateChips(); routeRender(); }
+
+// Dispatch to the right view (products vs product lines)
+function routeRender() {
+  if (plViewActive) renderProductLines();
+  else render();
+}
 function setMode(m) {
   filterMode = m;
   document.getElementById('mode-and').classList.toggle('active', m === 'AND');
@@ -863,7 +875,7 @@ function setView(v) {
 function clearAll() {
   activeAttrs.clear(); activeCats.clear(); activeStrains.clear();
   document.getElementById('search').value = '';
-  updateChips(); render();
+  updateChips(); routeRender();
 }
 function updateChips() {
   document.querySelectorAll('#cat-chips .chip').forEach(el => el.classList.toggle('cat-active', activeCats.has(el.textContent)));
@@ -1153,6 +1165,8 @@ function generateProductLines() {
   if (!RAW_DATA.length) return;
   plViewActive = true;
   plSubView = 'all';
+  document.getElementById('search').value = '';
+  document.getElementById('search').placeholder = 'Search product lines — brand, category, tags…';
   renderProductLines();
 }
 
@@ -1163,6 +1177,8 @@ function setPlSubView(v) {
 
 function exitProductLines() {
   plViewActive = false;
+  document.getElementById('search').value = '';
+  document.getElementById('search').placeholder = 'Search product name or brand…';
   render();
 }
 
@@ -1170,20 +1186,40 @@ function attrTagsHtml(attrs) {
   return attrs.length ? attrs.map(attrTag).join('') : '<span class="attr-tag none">no tags</span>';
 }
 
+// Does a product line match the current search query + active chips?
+function lineMatchesFilters(line) {
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  // Category chips
+  if (activeCats.size && !activeCats.has(line.cat)) return false;
+  // Tag chips — line must contain all selected attributes
+  if (activeAttrs.size && ![...activeAttrs].every(a => line.attrs.includes(a))) return false;
+  // Strain chips — match if ANY product in the line has the strain
+  if (activeStrains.size && !line.products.some(p => activeStrains.has(p.strain_classification))) return false;
+  // Free-text search across line name, brand, category, tags, and product names
+  if (q) {
+    const hay = [line.name, line.brand, line.cat, line.weight, line.attrs.join(' '),
+      line.products.map(p => p.name).join(' ')].join(' ').toLowerCase();
+    if (!hay.includes(q)) return false;
+  }
+  return true;
+}
+
 function renderProductLines() {
-  const lines = buildProductLines();
+  const allLines = buildProductLines();
+  // Apply search + chip filters to the lines
+  const lines = allLines.filter(lineMatchesFilters);
   const additive = findAdditiveMergeCandidates(lines);
   const miscat = findMiscategorizedSingletons(lines);
 
   const singletonCount = lines.filter(l => l.products.length === 1).length;
 
-  // Hide the standard filter/stat UI elements
+  // Hide the untagged banner; keep active filter pills visible so the user sees their filters
   document.getElementById('untagged-alert').innerHTML = '';
-  document.getElementById('active-filters').innerHTML = '';
+  renderActivePills();
 
   document.getElementById('stats-row').innerHTML = `
     <div class="stat-card"><div class="stat-value">${lines.length}</div><div class="stat-label">Product Lines</div></div>
-    <div class="stat-card"><div class="stat-value">${RAW_DATA.length}</div><div class="stat-label">Products</div></div>
+    <div class="stat-card"><div class="stat-value">${lines.reduce((s,l)=>s+l.products.length,0)}</div><div class="stat-label">Products</div></div>
     <div class="stat-card"><div class="stat-value">${singletonCount}</div><div class="stat-label">Single-Product Lines</div></div>
     <div class="stat-card" style="border-color:#fcd34d;background:#fffbeb;"><div class="stat-value" style="color:#b45309;">${additive.length}</div><div class="stat-label">Additive Merge Reviews</div></div>
     <div class="stat-card" style="border-color:#fca5a5;background:#fef2f2;"><div class="stat-value" style="color:var(--danger);">${miscat.length}</div><div class="stat-label">Miscategorized Reviews</div></div>`;
@@ -1258,6 +1294,9 @@ function renderProductLines() {
     }
   } else {
   // ── All product lines ──
+  if (!lines.length) {
+    html += `<div class="empty"><div class="empty-icon">∅</div><div class="empty-text">No product lines match your search or filters</div></div>`;
+  }
   const sorted = [...lines].sort((a,b) =>
     a.brand.localeCompare(b.brand) || a.cat.localeCompare(b.cat) ||
     (parseFloat(a.weight)||0)-(parseFloat(b.weight)||0) || a.attrs.join().localeCompare(b.attrs.join()));
@@ -1359,7 +1398,7 @@ if (document.readyState === 'loading') {
       box-shadow:var(--shadow);
     " onclick="document.getElementById('file-input').click()">
       <input type="file" id="file-input" accept=".csv" style="display:none">
-      <div style="width:56px;height:56px;background:var(--accent-light);border:1px solid #fed7aa;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 20px;">📂</div>
+      <div style="width:56px;height:56px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 20px;">📂</div>
       <div style="font-size:16px;font-weight:800;margin-bottom:6px;color:var(--text);">Drop your CSV here</div>
       <div style="font-size:13px;color:var(--muted);font-family:'JetBrains Mono',monospace;">or click to browse files</div>
       <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border);font-size:11px;color:var(--muted-light);font-family:'JetBrains Mono',monospace;line-height:1.8;">
