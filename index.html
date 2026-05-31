@@ -625,7 +625,7 @@
 const ATTR_GROUPS = {
   flower:   ['Deli','Preground','Shake/Trim','Prepack'],
   preroll:  ['Pack','Blunt','Single'],
-  extract:  ['Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe'],
+  extract:  ['Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO/FECO','CBD','Syringe'],
   hardware: ['Cart','AIO','Pod'],
   misc:     ['Sample','Infused'],
 };
@@ -633,7 +633,7 @@ const ATTR_GROUPS = {
 const ATTR_GROUP_MAP = {};
 Object.entries(ATTR_GROUPS).forEach(([g, attrs]) => attrs.forEach(a => ATTR_GROUP_MAP[a] = g));
 
-const ATTR_ORDER = ['Sample','Persy','Deli','Preground','Shake/Trim','Distillate','Cured','Live','Full Spectrum','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe','Cart','AIO','Pod','Infused','Pack','Prepack','Blunt','Single'];
+const ATTR_ORDER = ['Sample','Persy','Deli','Preground','Shake/Trim','Distillate','Cured','Live','Full Spectrum','Hash','Rosin','Resin','Diamond','Kief','RSO/FECO','CBD','Syringe','Cart','AIO','Pod','Infused','Pack','Prepack','Blunt','Single'];
 function sortAttrs(attrs) {
   return [...attrs].sort((a, b) => {
     const ai = ATTR_ORDER.indexOf(a), bi = ATTR_ORDER.indexOf(b);
@@ -707,11 +707,11 @@ function getAttributes(p) {
   if (/rosin|90u|90 micron|fresh press|fresh-press|cold cure|cold-cure|cold pressed|cold-pressed|solventless|hash rosin|ice water hash|persy|persie/.test(n)) attrs.push('Rosin');
   {
     const hashName = n.replace(/hash ?burger|ozark hash|hash ?plant/g, '');  // exclude strain names (hashburger, ozark hash, hashplant) from hash match
-    if (cat !== 'Flower' && /\bhash\b|bubble hash|brick hash|temple ball|\btemple\b|moroccan hash|full melt|hashhole|hash hole|hashish|charas|dry sift|ice water|piattella/.test(hashName)) attrs.push('Hash');
+    if (cat !== 'Flower' && /\bhash\b|bubble hash|brick hash|temple ball|\btemple\b|moroccan hash|full melt|hashhole|hash hole|hashish|charas|dry sift|ice water|piattella|\bfsho\b/.test(hashName)) attrs.push('Hash');
   }
   if (/diamonds?/.test(n)) attrs.push('Diamond');
-  if (/full spectrum|\bfso\b|\bfsho\b|\bfeco\b|htfse|hcfse/.test(n)) attrs.push('Full Spectrum');
-  if (/\brso\b|rick simpson/.test(n)) attrs.push('RSO');
+  if (/full spectrum|htfse|hcfse/.test(n)) attrs.push('Full Spectrum');
+  if (/\brso\b|rick simpson|\bfso\b|\bfeco\b/.test(n)) attrs.push('RSO/FECO');
   if (/\bkief\b|dry sift/.test(n)) attrs.push('Kief');
   if (/\bsyringe\b|\bdart\b/.test(n)) attrs.push('Syringe');
   if (/persy|persie|personal rosin/.test(n)) attrs.push('Persy');
@@ -727,7 +727,7 @@ function getAttributes(p) {
   const hasResinWord  = /resin/.test(n);
   // Words that suppress the texture→Resin inference (product is rosin/hash/diamond, not resin)
   const resinSuppressor = /rosin|hash|diamond/;
-  const EXTRACT_TAGS  = ['Rosin','Hash','Resin','Diamond','Distillate','Persy','RSO','Kief'];
+  const EXTRACT_TAGS  = ['Rosin','Hash','Resin','Diamond','Distillate','Persy','RSO/FECO','Kief'];
   const hasExtractTag = () => attrs.some(t => EXTRACT_TAGS.includes(t));
   // Resin applies when "resin" is written, OR a texture is present with no suppressing word
   const wantsResin = hasResinWord || (TEXTURE.test(n) && !resinSuppressor.test(n));
@@ -761,7 +761,7 @@ function getAttributes(p) {
   if (/\bcbd\b|cannabidiol/.test(n)) attrs.push('CBD');
 
   // DISTILLATE FALLBACK (Extracts & Vapes — both contain an extract; if none matched, assume distillate)
-  const extractTypes = ['Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe'];
+  const extractTypes = ['Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO/FECO','CBD','Syringe'];
   if ((cat === 'Extracts' || cat === 'Vapes') && !attrs.includes('Infused') && !attrs.some(a => extractTypes.includes(a))) {
     attrs.push('Distillate');
     p.__fallbacks.push('Distillate');
