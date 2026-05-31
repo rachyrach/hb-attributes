@@ -407,6 +407,20 @@
   .review-sub { font-size: 11px; color: #b45309; margin-top: 2px; font-family: 'JetBrains Mono', monospace; opacity: 0.85; }
   .review-arrow { margin-left: auto; color: #b45309; font-size: 16px; }
 
+  /* ── Sample banner (excluded from grouping) ── */
+  .sample-banner {
+    background: #fdf4ff; border: 1px solid #f0abfc;
+    border-radius: var(--radius); padding: 12px 16px;
+    margin-bottom: 14px; cursor: pointer;
+    display: flex; align-items: center; gap: 12px;
+    transition: box-shadow 0.15s;
+  }
+  .sample-banner:hover { box-shadow: var(--shadow-md); }
+  .sample-count { font-size: 22px; font-weight: 800; color: #a21caf; font-family: 'JetBrains Mono', monospace; }
+  .sample-label { font-size: 13px; color: #86198f; font-weight: 600; }
+  .sample-sub { font-size: 11px; color: #a21caf; margin-top: 2px; font-family: 'JetBrains Mono', monospace; opacity: 0.85; }
+  .sample-arrow { margin-left: auto; color: #a21caf; font-size: 16px; }
+
   /* ── Stats row ── */
   .stats-row {
     display: grid;
@@ -653,7 +667,7 @@ function getAttributes(p) {
   p.__fallbacks = [];  // reset each call; recomputed fresh
 
   // SAMPLE (all categories) — price <= $1 OR name contains sample/promo/display
-  if ((!isNaN(price) && price <= 1) || /sample|promo|display/.test(n)) attrs.push('Sample');
+  if ((!isNaN(price) && price > 0 && price <= 0.05) || /sample|promo|display/.test(n)) attrs.push('Sample');
 
   // Whether this product has a usable weight value
   const hasWeight = p.weight !== undefined && p.weight !== null && String(p.weight).trim() !== '' && !isNaN(parseFloat(p.weight));
@@ -1098,6 +1112,18 @@ function showReviewOnly() {
   renderStats(review);
 }
 
+function showSampleOnly() {
+  const samples = RAW_DATA.filter(p => getAttributes(p).includes('Sample'));
+  document.getElementById('products-container').innerHTML = `
+    <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:13px;color:#a21caf;font-weight:700">⊘ ${samples.length} sample products (excluded from grouping)</span>
+      <button class="export-btn" style="padding:5px 12px" onclick="renderProductLines()">← Back</button>
+    </div>
+    <div class="products-grid">${samples.map(productCard).join('')}</div>`;
+  document.getElementById('untagged-alert').innerHTML = '';
+  renderStats(samples);
+}
+
 // ============================================================
 //  PRODUCT LINES — grouping + merge-candidate review
 //  Product Line = Brand + Category + Weight + [exact Tag Set]
@@ -1118,7 +1144,8 @@ function buildProductLines() {
   const groups = {};
   RAW_DATA.forEach(p => {
     const allAttrs = getAttributes(p);
-    const groupAttrs = allAttrs.filter(a => a !== 'CBD' && a !== 'Sample');  // CBD & Sample never affect grouping
+    if (allAttrs.includes('Sample')) return;  // samples are set aside — not grouped at all
+    const groupAttrs = allAttrs.filter(a => a !== 'CBD');  // CBD ignored for grouping
     const brand = (p.brand_name || '—').trim();
     const cat = (p.category || '—').trim();
     const weight = (p.weight || '—').toString().trim();
@@ -1229,6 +1256,7 @@ function renderProductLines() {
   const miscat = findMiscategorizedSingletons(lines);
 
   const singletonCount = lines.filter(l => l.products.length === 1).length;
+  const sampleProducts = RAW_DATA.filter(p => getAttributes(p).includes('Sample'));
 
   // Hide the untagged banner; keep active filter pills visible so the user sees their filters
   document.getElementById('untagged-alert').innerHTML = '';
@@ -1242,6 +1270,16 @@ function renderProductLines() {
     <div class="stat-card" style="border-color:#fca5a5;background:#fef2f2;"><div class="stat-value" style="color:var(--danger);">${miscat.length}</div><div class="stat-label">Miscategorized Reviews</div></div>`;
 
   document.getElementById('result-count').innerHTML = `<strong>${lines.length}</strong> product lines`;
+
+  // Sample products set aside (excluded from grouping)
+  if (sampleProducts.length) {
+    document.getElementById('untagged-alert').innerHTML = `<div class="sample-banner" onclick="showSampleOnly()">
+      <div><div class="sample-count">${sampleProducts.length}</div>
+        <div class="sample-label">sample products excluded from grouping</div>
+        <div class="sample-sub">Priced \$0.01–\$0.05 or named sample/promo/display · click to review</div>
+      </div><span class="sample-arrow">→</span>
+    </div>`;
+  }
 
   const reviewCount = additive.length + miscat.length;
   let html = `<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
