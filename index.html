@@ -674,7 +674,7 @@ function getAttributes(p) {
 
   // FLOWER — weightless flower skips Deli / Preground / Prepack, but still gets name-based tags (Infused, etc.)
   if (cat === 'Flower') {
-    if (/deli|bulk/.test(n) || (hasWeight && weight === 1)) attrs.push('Deli');
+    if (!/pre[\s-]?pack/.test(n) && (/deli|bulk/.test(n) || (hasWeight && weight === 1))) attrs.push('Deli');
     if (/preground|pre-ground|ground|ready-to-roll|ready to roll|milled/.test(n)) attrs.push('Preground');
     if (/shake|trim/.test(n)) attrs.push('Shake/Trim');
     if (/infused|moonrock|moon rock|snowball|caviar|sun rock|sunrock/.test(n)) attrs.push('Infused');
@@ -723,7 +723,7 @@ function getAttributes(p) {
     const hashName = n.replace(/hash ?burger|ozark hash|hash ?plant/g, '');  // exclude strain names (hashburger, ozark hash, hashplant) from hash match
     if (cat !== 'Flower' && /\bhash\b|bubble hash|brick hash|temple ?ball|moroccan hash|full melt|hashhole|hash hole|hashish|charas|dry sift|ice water|piattella|\bfsho\b/.test(hashName)) attrs.push('Hash');
   }
-  if (/diamonds?/.test(n)) attrs.push('Diamond');
+  if (cat !== 'Flower' && /diamonds?/.test(n)) { attrs.push('Diamond'); p.__fallbacks.push('Diamond'); }
   if (/full spectrum|htfse|hcfse/.test(n)) attrs.push('Full Spectrum');
   if (/\brso\b|rick simpson|\bfso\b|\bfeco\b/.test(n)) attrs.push('RSO/FECO');
   if (/\bkief\b|dry sift/.test(n)) attrs.push('Kief');
@@ -744,15 +744,18 @@ function getAttributes(p) {
   const EXTRACT_TAGS  = ['Rosin','Hash','Resin','Diamond','Distillate','Persy','RSO/FECO','Kief'];
   const hasExtractTag = () => attrs.some(t => EXTRACT_TAGS.includes(t));
   // Resin applies when "resin" is written, OR a texture is present with no suppressing word
-  const wantsResin = hasResinWord || (TEXTURE.test(n) && !resinSuppressor.test(n));
+  const textureInferredResin = !hasResinWord && TEXTURE.test(n) && !resinSuppressor.test(n);
+  const wantsResin = hasResinWord || textureInferredResin;
+  // When Resin is inferred from a texture word (not the literal "resin"), flag for review
+  const flagResin = () => { if (textureInferredResin) p.__fallbacks.push('Resin'); };
   if (isExtractCat) {
     if (hasLive) {
       attrs.push('Live');
-      if (wantsResin) attrs.push('Resin');
+      if (wantsResin) { attrs.push('Resin'); flagResin(); }
     }
     else if (hasCured) {
       attrs.push('Cured');
-      if (wantsResin) attrs.push('Resin');
+      if (wantsResin) { attrs.push('Resin'); flagResin(); }
     }
     // LR / CR abbreviations — only if no extract tag matched yet
     else if (/\bLR\b|\bL\.R\.?/i.test(name) && !hasExtractTag()) {
@@ -1076,7 +1079,7 @@ function render() {
     bannerHtml += `<div class="review-banner" onclick="showReviewOnly()">
         <div><div class="review-count">${reviewProducts.length}</div>
           <div class="review-label">products have an inferred tag — review recommended</div>
-          <div class="review-sub">Cart or Distillate assumed from category, not found in the name · click to review</div>
+          <div class="review-sub">Cart/Distillate assumed from category, or Resin inferred from a texture word · click to review</div>
         </div><span class="review-arrow">→</span>
       </div>`;
   }
@@ -1133,7 +1136,7 @@ let plSubView = 'all';  // 'all' or 'review'
 
 // Hash is additive (merges across) UNLESS it's the only tag.
 // CBD is excluded from grouping entirely (stripped in buildProductLines), so it's not listed here.
-const ADDITIVE_TAGS = ['Hash'];
+const ADDITIVE_TAGS = ['Hash', 'Diamond'];
 
 function tagSetKey(attrs) {
   return [...attrs].sort().join('|');
