@@ -535,6 +535,77 @@
     background: var(--surface2); border: 1px solid var(--border);
     color: var(--text-secondary); font-family: 'JetBrains Mono', monospace;
   }
+
+  /* ── Merge decision cards ── */
+  .pl-toolbar { margin-bottom:16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .price-switch { display:flex; align-items:center; gap:7px; font-size:12px; font-weight:600; color:var(--text-secondary); cursor:pointer; user-select:none; }
+  .price-switch .sw { width:32px; height:19px; border-radius:20px; background:var(--border-strong); position:relative; transition:background .15s; }
+  .price-switch .sw.on { background:var(--green); }
+  .price-switch .sw::after { content:''; position:absolute; width:15px; height:15px; border-radius:50%; background:#fff; top:2px; left:2px; transition:left .15s; box-shadow:var(--shadow-sm); }
+  .price-switch .sw.on::after { left:15px; }
+
+  .dc-card { background:var(--surface); border:1px solid #fcd34d; border-radius:var(--radius); margin-bottom:14px; overflow:hidden; box-shadow:var(--shadow-sm); }
+  .dc-card.resolved { border-color:var(--green-border); }
+  .dc-head { background:#fffbeb; border-bottom:1px solid #fcd34d; padding:12px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .dc-id { font-size:15px; font-weight:800; color:var(--text); }
+  .dc-review { font-size:12px; font-weight:800; color:#92400e; display:flex; align-items:center; gap:6px; }
+  .dc-seg { display:flex; border:1px solid var(--border-strong); border-radius:var(--radius-sm); overflow:hidden; }
+  .dc-seg-btn { padding:5px 13px; font-size:12px; font-weight:700; cursor:pointer; border:none; border-right:1px solid var(--border-strong); background:#E7EDF3; color:var(--muted); font-family:'Plus Jakarta Sans',sans-serif; }
+  .dc-seg-btn:last-child { border-right:none; }
+  .dc-seg-btn.sel { background:var(--accent); color:#fff; }
+  .dc-apply { margin-left:auto; padding:6px 18px; font-size:12px; font-weight:800; border:none; border-radius:var(--radius-sm); background:var(--accent); color:#fff; cursor:pointer; font-family:'Plus Jakarta Sans',sans-serif; }
+  .dc-apply:hover { background:var(--accent-dark); }
+  .dc-body { padding:14px 16px; }
+  .dc-outcome-head { font-size:12px; font-weight:800; margin-bottom:11px; display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+  .dc-outcome-head.merge { color:#3f4954; }
+  .dc-outcome-head.keep { color:var(--accent); }
+  .dc-outcome-head .oh { color:var(--muted-light); font-weight:600; font-family:'JetBrains Mono',monospace; font-size:11px; }
+  .dc-grp { padding:11px 0; border-top:1px solid var(--border); }
+  .dc-grp:first-of-type { border-top:none; padding-top:2px; }
+  .dc-grp-head { display:flex; align-items:center; gap:8px; margin-bottom:7px; flex-wrap:wrap; }
+  .dc-grp-name { font-size:13px; font-weight:700; }
+  .dc-grp-count { font-size:10px; font-family:'JetBrains Mono',monospace; color:var(--muted); background:var(--surface2); border:1px solid var(--border); padding:1px 7px; border-radius:20px; }
+  .dc-viewall { margin-left:auto; font-size:11px; font-weight:700; color:var(--accent); cursor:pointer; border:1px solid var(--accent-border); border-radius:var(--radius-sm); padding:3px 9px; background:var(--surface); }
+  .dc-viewall:hover { background:var(--accent); color:#fff; }
+  .dc-grp-tags { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:8px; }
+  .dcp-row { font-size:11.5px; color:var(--text-secondary); padding:2px 0; display:flex; gap:8px; align-items:baseline; font-family:'JetBrains Mono',monospace; }
+  .dcp-price { color:var(--green-dark); font-weight:700; min-width:54px; display:none; }
+  .dc-body.show-price .dcp-price { display:inline; }
+  .dcp-more { font-size:11px; color:var(--muted); padding:2px 0; font-style:italic; }
+  .dc-foot { margin-top:12px; padding-top:11px; border-top:1px solid var(--border); font-size:11px; font-family:'JetBrains Mono',monospace; color:#3f4954; font-weight:700; }
+  .dc-foot.keep { color:var(--accent); }
+  .dc-resolved { background:var(--green-light); padding:12px 16px; font-size:13px; font-weight:700; color:var(--green-dark); display:flex; align-items:center; gap:8px; }
+  .dc-undo { margin-left:auto; font-size:11px; font-weight:700; color:var(--muted); cursor:pointer; border:1px solid var(--border); border-radius:var(--radius-sm); padding:3px 10px; }
+  .dc-undo:hover { border-color:var(--danger); color:var(--danger); }
+
+  .pl-merged-badge { font-size:10px; font-weight:700; font-family:'JetBrains Mono',monospace; background:var(--accent-light); color:var(--accent); border:1px solid var(--accent-border); padding:2px 9px; border-radius:20px; cursor:pointer; }
+  .pl-merged-badge:hover { background:var(--accent); color:#fff; }
+
+  /* decisions panel */
+  .pl-decisions { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
+  .pl-dec-row { display:flex; align-items:center; gap:12px; padding:11px 16px; border-bottom:1px solid var(--border); font-size:12px; }
+  .pl-dec-row:last-child { border-bottom:none; }
+  .pl-dec-icon { width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0; }
+  .pl-dec-icon.merge { background:var(--green-light); color:var(--green-dark); border:1px solid var(--green-border); }
+  .pl-dec-icon.keep { background:var(--accent-light); color:var(--accent); border:1px solid var(--accent-border); }
+  .pl-dec-desc { flex:1; }
+  .pl-dec-combo { font-family:'JetBrains Mono',monospace; color:var(--text); font-weight:600; }
+  .pl-dec-effect { color:var(--muted); font-size:11px; margin-top:1px; }
+  .pl-dec-undo { font-size:11px; font-weight:700; color:var(--muted); cursor:pointer; padding:4px 10px; border:1px solid var(--border); border-radius:var(--radius-sm); }
+  .pl-dec-undo:hover { border-color:var(--danger); color:var(--danger); }
+
+  /* line modal */
+  .pl-modal-bg { position:fixed; inset:0; background:rgba(4,30,57,.45); display:none; align-items:center; justify-content:center; z-index:300; padding:24px; }
+  .pl-modal-bg.open { display:flex; }
+  .pl-modal { background:var(--surface); border-radius:var(--radius); max-width:760px; width:100%; max-height:80vh; overflow:auto; box-shadow:0 20px 50px rgba(0,0,0,.3); }
+  .pl-modal-head { position:sticky; top:0; background:var(--surface); border-bottom:1px solid var(--border); padding:16px 20px; display:flex; align-items:center; gap:10px; }
+  .pl-modal-title { font-size:14px; font-weight:800; }
+  .pl-modal-close { margin-left:auto; cursor:pointer; font-size:18px; color:var(--muted); border:none; background:none; }
+  .pl-modal-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .pl-modal-table th { text-align:left; padding:9px 20px; font-size:10px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border); font-family:'JetBrains Mono',monospace; }
+  .pl-modal-table td { padding:9px 20px; border-bottom:1px solid var(--border); font-family:'JetBrains Mono',monospace; color:var(--text-secondary); }
+  .pl-modal-table td.m-name { font-family:'Plus Jakarta Sans',sans-serif; font-weight:600; color:var(--text); }
+  .pl-modal-table tr:last-child td { border-bottom:none; }
 </style>
 
 </head>
@@ -1138,6 +1209,35 @@ let plSubView = 'all';  // 'all' or 'review'
 // CBD is excluded from grouping entirely (stripped in buildProductLines), so it's not listed here.
 const ADDITIVE_TAGS = ['Hash', 'Diamond'];
 
+// ── Merge-override layer ──────────────────────────────────────────────
+// MERGE_OVERRIDES: forward-looking rules that fold an additive tag into a base group.
+//   { brand, cat, weight, baseTags:[...sorted core tags], ignore:'Diamond' }
+// KEEP_SEPARATE: decisions that a flagged pair is genuinely distinct (stop flagging).
+//   { brand, cat, weight, baseKey:'<sorted core tags>', ignore:'Diamond' }
+let MERGE_OVERRIDES = [];
+let KEEP_SEPARATE = [];
+let PL_SHOW_PRICE = false;
+let PL_RESOLVED = {};  // ci -> 'merge'|'keep' for green resolved state until view is left
+
+function comboKey(brand, cat, weight, baseTagsArr) {
+  return [brand, cat, weight, [...baseTagsArr].sort().join('|')].join('§');
+}
+// Does a merge override apply to this product's group? Returns the tag to strip, or null.
+function overrideIgnoreTag(brand, cat, weight, attrs) {
+  for (const o of MERGE_OVERRIDES) {
+    if (o.brand === brand && o.cat === cat && o.weight === weight && attrs.includes(o.ignore)) {
+      // base = this product's attrs minus the ignored tag; must match the override's baseTags
+      const base = attrs.filter(a => a !== o.ignore).sort().join('|');
+      if (base === [...o.baseTags].sort().join('|')) return o.ignore;
+    }
+  }
+  return null;
+}
+function isKeptSeparate(brand, cat, weight, coreKey, ignoreTag) {
+  return KEEP_SEPARATE.some(k => k.brand === brand && k.cat === cat && k.weight === weight
+    && k.baseKey === coreKey && k.ignore === ignoreTag);
+}
+
 function tagSetKey(attrs) {
   return [...attrs].sort().join('|');
 }
@@ -1148,17 +1248,28 @@ function buildProductLines() {
   RAW_DATA.forEach(p => {
     const allAttrs = getAttributes(p);
     if (allAttrs.includes('Sample')) return;  // samples are set aside — not grouped at all
-    const groupAttrs = allAttrs.filter(a => a !== 'CBD');  // CBD ignored for grouping
+    let groupAttrs = allAttrs.filter(a => a !== 'CBD');  // CBD ignored for grouping
     const brand = (p.brand_name || '—').trim();
     const cat = (p.category || '—').trim();
     const weight = (p.weight || '—').toString().trim();
+    // Apply any merge override: strip the ignored additive tag so this product folds into the base group
+    const strip = overrideIgnoreTag(brand, cat, weight, groupAttrs);
+    if (strip) groupAttrs = groupAttrs.filter(a => a !== strip);
     const key = [brand, cat, weight, tagSetKey(groupAttrs)].join('§');
     if (!groups[key]) groups[key] = { brand, cat, weight, attrs: sortAttrs(groupAttrs), products: [] };
     groups[key].products.push(p);
   });
   const lines = Object.values(groups);
-  lines.forEach(l => l.name = productLineName(l));
+  lines.forEach(l => { l.name = productLineName(l); l.mergedTags = mergedTagsFor(l); });
   return lines;
+}
+
+// Which ignored tags have been folded into this line (for the "⤵ X ignored" badge)
+function mergedTagsFor(line) {
+  return MERGE_OVERRIDES
+    .filter(o => o.brand === line.brand && o.cat === line.cat && o.weight === line.weight
+      && [...o.baseTags].sort().join('|') === tagSetKey(line.attrs))
+    .map(o => o.ignore);
 }
 
 // Group name: [Brand] - [Category] - [tag+tag+tag] - [weight]  (middle omitted if untagged)
@@ -1177,17 +1288,50 @@ function coreTags(attrs) {
 }
 
 // Find merge candidates: groups sharing Brand+Cat+Weight + same CORE tags,
-// differing only by additive tags (Hash/CBD)
+// differing only by additive tags (Hash/Diamond). Excludes pairs already kept-separate.
+// Returns structured candidates: { brand, cat, weight, base, extras, ignoreTag, coreKey }
 function findAdditiveMergeCandidates(lines) {
   const buckets = {};
-  lines.forEach((line, i) => {
-    const coreKey = [line.brand, line.cat, line.weight, tagSetKey(coreTags(line.attrs))].join('§');
-    (buckets[coreKey] = buckets[coreKey] || []).push(i);
+  lines.forEach(line => {
+    const core = coreTags(line.attrs);
+    const coreKey = [line.brand, line.cat, line.weight, tagSetKey(core)].join('§');
+    (buckets[coreKey] = buckets[coreKey] || []).push(line);
   });
-  // Only keep buckets with >1 distinct group (i.e. genuinely different tag sets that share a core)
-  return Object.values(buckets)
-    .filter(idxs => idxs.length > 1)
-    .map(idxs => idxs.map(i => lines[i]));
+  const out = [];
+  Object.entries(buckets).forEach(([coreKey, group]) => {
+    if (group.length < 2) return;
+    // base = the line whose tags ARE the core (fewest tags); extras = the rest
+    const core = coreTags(group[0].attrs);
+    const coreStr = [...core].sort().join('|');
+    let base = group.find(l => tagSetKey(l.attrs) === coreStr);
+    const extras = group.filter(l => l !== base);
+    if (!base) { base = group.slice().sort((a,b)=>a.attrs.length-b.attrs.length)[0]; }
+    // the differing (additive) tag(s) — union of what extras have beyond base
+    const ignoreTags = [...new Set(extras.flatMap(l => l.attrs.filter(a => !core.includes(a))))];
+    const ignoreTag = ignoreTags[0] || 'Hash';
+    const baseKey = [...core].sort().join('|');
+    // skip if user already chose "keep separate" for this combo+tag
+    if (isKeptSeparate(base.brand, base.cat, base.weight, baseKey, ignoreTag)) return;
+    out.push({ brand: base.brand, cat: base.cat, weight: base.weight,
+      base, extras, ignoreTag, core, baseKey, coreKey });
+  });
+  return out;
+}
+
+// ── Apply / undo decisions ──
+function applyMerge(c) {
+  // record a forward-looking override; remove any conflicting keep-separate
+  MERGE_OVERRIDES.push({ brand:c.brand, cat:c.cat, weight:c.weight, baseTags:[...c.core], ignore:c.ignoreTag });
+  KEEP_SEPARATE = KEEP_SEPARATE.filter(k => !(k.brand===c.brand && k.cat===c.cat && k.weight===c.weight && k.baseKey===c.baseKey && k.ignore===c.ignoreTag));
+}
+function applyKeepSeparate(c) {
+  KEEP_SEPARATE.push({ brand:c.brand, cat:c.cat, weight:c.weight, baseKey:c.baseKey, ignore:c.ignoreTag });
+  MERGE_OVERRIDES = MERGE_OVERRIDES.filter(o => !(o.brand===c.brand && o.cat===c.cat && o.weight===c.weight && [...o.baseTags].sort().join('|')===c.baseKey && o.ignore===c.ignoreTag));
+}
+function undoDecision(kind, idx) {
+  if (kind === 'merge') MERGE_OVERRIDES.splice(idx, 1);
+  else KEEP_SEPARATE.splice(idx, 1);
+  renderProductLines();
 }
 
 // Find miscategorized singletons: a 1-product group that matches another group
@@ -1218,6 +1362,8 @@ function generateProductLines() {
 }
 
 function setPlSubView(v) {
+  // leaving the review tab clears the green "resolved" states and selections
+  if (plSubView === 'review' && v !== 'review') { PL_RESOLVED = {}; PL_SELECT = {}; }
   plSubView = v;
   renderProductLines();
 }
@@ -1256,6 +1402,7 @@ function renderProductLines() {
   // Apply search + chip filters to the lines
   const lines = allLines.filter(lineMatchesFilters);
   const additive = findAdditiveMergeCandidates(lines);
+  PL_CANDIDATES = additive;
   const miscat = findMiscategorizedSingletons(lines);
 
   const singletonCount = lines.filter(l => l.products.length === 1).length;
@@ -1285,39 +1432,25 @@ function renderProductLines() {
   }
 
   const reviewCount = additive.length + miscat.length;
-  let html = `<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+  const decisionCount = MERGE_OVERRIDES.length + KEEP_SEPARATE.length;
+  let html = `<div class="pl-toolbar">
     <span style="font-size:15px;font-weight:800;color:var(--text);">Product Lines</span>
     <button class="export-btn" style="padding:5px 12px" onclick="exitProductLines()">← Back to products</button>
     <div class="view-toggle" style="margin-left:8px;">
       <button class="view-btn ${plSubView==='all'?'active':''}" onclick="setPlSubView('all')">All Lines (${lines.length})</button>
-      <button class="view-btn ${plSubView==='review'?'active':''}" onclick="setPlSubView('review')">Needs Review (${reviewCount})</button>
+      <button class="view-btn ${plSubView==='review'?'active':''}" onclick="setPlSubView('review')">Needs Review (${additive.length + miscat.length})</button>
+      <button class="view-btn ${plSubView==='decisions'?'active':''}" onclick="setPlSubView('decisions')">Decisions (${decisionCount})</button>
     </div>
+    ${plSubView==='review' ? `<label class="price-switch" onclick="togglePlPrice(event)"><span class="sw ${PL_SHOW_PRICE?'on':''}"></span>Show price</label>` : ''}
     <button class="export-btn" style="padding:5px 12px" onclick="exportProductLines()">↓ Export Lines CSV</button>
+    <button class="export-btn" style="padding:5px 12px" onclick="exportDecisions()">↓ Export Rules</button>
   </div>`;
 
   if (plSubView === 'review') {
 
-  // ── Review section: additive merge candidates ──
+  // ── Review section: additive merge decision cards ──
   if (additive.length) {
-    html += `<div class="pl-review-section">
-      <div class="pl-review-header" style="background:#fffbeb;border-color:#fcd34d;color:#92400e;">
-        ⚑ ${additive.length} potential merge${additive.length>1?'s':''} — same brand/category/weight, differ only by Hash/CBD
-      </div>`;
-    additive.forEach(groupSet => {
-      const first = groupSet[0];
-      html += `<div class="pl-review-card">
-        <div class="pl-review-meta">${first.brand} · ${first.cat} · ${first.weight}g</div>
-        <div class="pl-review-groups">`;
-      groupSet.forEach(line => {
-        html += `<div class="pl-mini-group">
-          <div class="pl-mini-tags">${attrTagsHtml(line.attrs)}</div>
-          <div class="pl-mini-count">${line.products.length} product${line.products.length>1?'s':''}</div>
-          <div class="pl-mini-names">${line.products.map(p => `<div>${p.name}</div>`).join('')}</div>
-        </div>`;
-      });
-      html += `</div></div>`;
-    });
-    html += `</div>`;
+    additive.forEach((c, ci) => html += renderDecisionCard(c, ci));
   }
 
   // ── Review section: miscategorized singletons ──
@@ -1350,6 +1483,8 @@ function renderProductLines() {
     if (!additive.length && !miscat.length) {
       html += `<div class="empty"><div class="empty-icon">✓</div><div class="empty-text">No product lines need review — everything looks clean.</div></div>`;
     }
+  } else if (plSubView === 'decisions') {
+    html += renderDecisionsPanel();
   } else {
   // ── All product lines ──
   if (!lines.length) {
@@ -1362,10 +1497,13 @@ function renderProductLines() {
   sorted.forEach(line => {
     const totalSold = line.products.reduce((s,p)=>s+(parseFloat(p.units_sold)||0),0);
     const totalRev = line.products.reduce((s,p)=>s+(parseFloat(p.dollars_sold)||0),0);
+    const badge = (line.mergedTags && line.mergedTags.length)
+      ? `<span class="pl-merged-badge" onclick="setPlSubView('decisions')">⤵ ${line.mergedTags.join(', ')} ignored · undo</span>` : '';
     html += `<div class="pl-line-card">
       <div class="pl-line-head">
         <span class="pl-line-title">${line.name}</span>
         <span class="pl-line-tags">${attrTagsHtml(line.attrs)}</span>
+        ${badge}
         <span class="pl-line-stats">${line.products.length} SKU${line.products.length>1?'s':''} · ${totalSold.toLocaleString()} sold · $${Math.round(totalRev).toLocaleString()}</span>
       </div>
       <div class="pl-line-products">${line.products.map(p=>`<span class="pl-product-chip">${p.name}</span>`).join('')}</div>
@@ -1374,6 +1512,131 @@ function renderProductLines() {
   }
 
   document.getElementById('products-container').innerHTML = html;
+}
+
+// ── Decision card (interactive merge / keep-separate) ──
+function fmtPrice(p) {
+  const v = parseFloat(p.unit_price);
+  return isNaN(v) ? '—' : '$' + v.toFixed(2);
+}
+function prodRows(line) {
+  const shown = line.products.slice(0, 3);
+  let h = shown.map(p => `<div class="dcp-row"><span class="dcp-price">${fmtPrice(p)}</span> ${p.name}</div>`).join('');
+  if (line.products.length > 3) h += `<div class="dcp-more">+ ${line.products.length - 3} more</div>`;
+  return h;
+}
+function groupBlock(line, withModal) {
+  const va = withModal ? `<span class="dc-viewall" onclick='openLineModal(${JSON.stringify(JSON.stringify({name:line.name, products:line.products.map(p=>({name:p.name,price:fmtPrice(p),tags:getAttributes(p).filter(a=>a!=='Sample').join(' '),sold:p.units_sold||'0',margin:p.average_margin_percent?p.average_margin_percent+'%':'—'}))}))})'>View all</span>` : '';
+  return `<div class="dc-grp">
+    <div class="dc-grp-head"><span class="dc-grp-name">${line.name}</span><span class="dc-grp-count">${line.products.length} product${line.products.length>1?'s':''}</span>${va}</div>
+    <div class="dc-grp-tags">${attrTagsHtml(line.attrs)}</div>
+    ${prodRows(line)}
+  </div>`;
+}
+function renderDecisionCard(c, ci) {
+  // resolved (green) state after Apply, until view is left
+  if (PL_RESOLVED[ci]) {
+    const word = PL_RESOLVED[ci] === 'merge' ? `Merged — ${c.ignoreTag} ignored` : 'Kept separate';
+    return `<div class="dc-card resolved">
+      <div class="dc-resolved">✓ ${word} · <b>${c.brand} · ${c.cat} · ${c.weight}g</b>
+      <span class="dc-undo" onclick="undoResolved(${ci})">undo</span></div></div>`;
+  }
+  const sel = (PL_SELECT[ci] || 'keep');
+  const baseTagsHtml = c.core.map(t => attrTag(t)).join('');
+  const ignoredHtml = `<span class="attr-tag misc-tag" style="background:#fef2f2;color:var(--danger);border-color:#fca5a5">${c.ignoreTag}</span>`;
+
+  // Merge outcome: a single combined line (base name) with all products folded in
+  const allProds = [c.base, ...c.extras].flatMap(l => l.products);
+  const mergedLine = { brand:c.brand, cat:c.cat, weight:c.weight, attrs:c.base.attrs, name:c.base.name, products:allProds };
+  const mergeBody = `<div class="dc-outcome-head merge">✓ Merging <span class="oh">· Shared:</span> ${baseTagsHtml} <span class="oh">Ignored:</span> ${ignoredHtml}</div>
+    ${groupBlock(mergedLine, true)}
+    <div class="dc-foot">⤵ Future ${c.brand} · ${c.cat} · ${c.weight}g · ${c.core.join(' ')||'(untagged)'} products with ${c.ignoreTag} fold in automatically.</div>`;
+
+  const keepBody = `<div class="dc-outcome-head keep">⊘ Keeping separate — ${1 + c.extras.length} distinct lines</div>
+    ${[c.base, ...c.extras].map(l => groupBlock(l, true)).join('')}
+    <div class="dc-foot keep">⊘ This pair will no longer be flagged for review.</div>`;
+
+  return `<div class="dc-card">
+    <div class="dc-head">
+      <span class="dc-id">${c.brand} · ${c.cat} · ${c.weight}g</span>
+      <span class="dc-review">⚑ Review <span class="attr-tag misc-tag" style="background:#fef2f2;color:var(--danger);border-color:#fca5a5">${c.ignoreTag}</span></span>
+      <div class="dc-seg">
+        <button class="dc-seg-btn ${sel==='keep'?'sel':''}" onclick="pickDecision(${ci},'keep')">Keep separate</button>
+        <button class="dc-seg-btn ${sel==='merge'?'sel':''}" onclick="pickDecision(${ci},'merge')">Merge</button>
+      </div>
+      <button class="dc-apply" onclick="applyDecision(${ci})">Apply</button>
+    </div>
+    <div class="dc-body ${PL_SHOW_PRICE?'show-price':''}">
+      ${sel==='merge' ? mergeBody : keepBody}
+    </div>
+  </div>`;
+}
+
+let PL_SELECT = {};   // ci -> 'merge'|'keep'
+let PL_CANDIDATES = []; // cached candidate list for the current render
+function pickDecision(ci, choice) { PL_SELECT[ci] = choice; renderProductLines(); }
+function applyDecision(ci) {
+  const c = PL_CANDIDATES[ci];
+  if (!c) return;
+  const choice = PL_SELECT[ci] || 'keep';
+  if (choice === 'merge') applyMerge(c); else applyKeepSeparate(c);
+  PL_RESOLVED[ci] = choice;
+  renderProductLines();
+}
+function undoResolved(ci) {
+  const c = PL_CANDIDATES[ci];
+  const choice = PL_RESOLVED[ci];
+  if (c) {
+    if (choice === 'merge') {
+      MERGE_OVERRIDES = MERGE_OVERRIDES.filter(o => !(o.brand===c.brand&&o.cat===c.cat&&o.weight===c.weight&&[...o.baseTags].sort().join('|')===c.baseKey&&o.ignore===c.ignoreTag));
+    } else {
+      KEEP_SEPARATE = KEEP_SEPARATE.filter(k => !(k.brand===c.brand&&k.cat===c.cat&&k.weight===c.weight&&k.baseKey===c.baseKey&&k.ignore===c.ignoreTag));
+    }
+  }
+  delete PL_RESOLVED[ci];
+  renderProductLines();
+}
+function togglePlPrice(e) { if (e) e.preventDefault(); PL_SHOW_PRICE = !PL_SHOW_PRICE; renderProductLines(); }
+
+function renderDecisionsPanel() {
+  if (!MERGE_OVERRIDES.length && !KEEP_SEPARATE.length) {
+    return `<div class="empty"><div class="empty-icon">○</div><div class="empty-text">No decisions yet. Merge or keep-separate choices you make will be listed here.</div></div>`;
+  }
+  let h = `<div class="pl-decisions">`;
+  MERGE_OVERRIDES.forEach((o, i) => {
+    h += `<div class="pl-dec-row">
+      <span class="pl-dec-icon merge">✓</span>
+      <div class="pl-dec-desc"><div class="pl-dec-combo">${o.brand} · ${o.cat} · ${o.weight}g · ${o.baseTags.join(' ')||'(untagged)'}</div>
+        <div class="pl-dec-effect">Ignoring <b>${o.ignore}</b> — ${o.ignore}-variants fold into this group</div></div>
+      <span class="pl-dec-undo" onclick="undoDecision('merge',${i})">Undo</span></div>`;
+  });
+  KEEP_SEPARATE.forEach((k, i) => {
+    h += `<div class="pl-dec-row">
+      <span class="pl-dec-icon keep">⊘</span>
+      <div class="pl-dec-desc"><div class="pl-dec-combo">${k.brand} · ${k.cat} · ${k.weight}g · ${k.baseKey.split('|').join(' ')||'(untagged)'}</div>
+        <div class="pl-dec-effect">Kept separate from <b>${k.ignore}</b> variant — genuinely different</div></div>
+      <span class="pl-dec-undo" onclick="undoDecision('keep',${i})">Undo</span></div>`;
+  });
+  h += `</div>`;
+  return h;
+}
+
+// Modal: full product table for a line
+function openLineModal(payload) {
+  const data = JSON.parse(payload);
+  let rows = data.products.map(p => `<tr><td>${p.price}</td><td class="m-name">${p.name}</td><td>${p.tags||'—'}</td><td>${p.sold}</td><td>${p.margin}</td></tr>`).join('');
+  document.getElementById('pl-modal-title').textContent = data.name + ' — all products';
+  document.getElementById('pl-modal-body').innerHTML = `<table class="pl-modal-table"><thead><tr><th>Price</th><th>Product</th><th>Tags</th><th>Sold</th><th>Margin%</th></tr></thead><tbody>${rows}</tbody></table>`;
+  document.getElementById('pl-modal').classList.add('open');
+}
+function closeLineModal() { document.getElementById('pl-modal').classList.remove('open'); }
+
+// Export the decision rules as JSON (persists into the future POS integration)
+function exportDecisions() {
+  const payload = JSON.stringify({ merge_overrides: MERGE_OVERRIDES, keep_separate: KEEP_SEPARATE }, null, 2);
+  const blob = new Blob([payload], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'happy-buyers-grouping-rules.json'; a.click();
 }
 
 function exportProductLines() {
@@ -1474,5 +1737,14 @@ if (document.readyState === 'loading') {
   </div>
 </div>
 
+<div class="pl-modal-bg" id="pl-modal" onclick="if(event.target===this)closeLineModal()">
+  <div class="pl-modal">
+    <div class="pl-modal-head">
+      <span class="pl-modal-title" id="pl-modal-title">Products</span>
+      <button class="pl-modal-close" onclick="closeLineModal()">✕</button>
+    </div>
+    <div id="pl-modal-body"></div>
+  </div>
+</div>
 </body>
 </html>
