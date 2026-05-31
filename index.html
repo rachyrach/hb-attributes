@@ -705,7 +705,10 @@ function getAttributes(p) {
   // EXTRACTS (all categories)
   if (/distillate/.test(n)) attrs.push('Distillate');
   if (/rosin|90u|90 micron|fresh press|fresh-press|cold cure|cold-cure|cold pressed|cold-pressed|solventless|hash rosin|ice water hash|persy|persie/.test(n)) attrs.push('Rosin');
-  if (cat !== 'Flower' && /\bhash\b|bubble hash|brick hash|temple ball|\btemple\b|moroccan hash|full melt|hashhole|hash hole|hashish|charas|dry sift|ice water/.test(n)) attrs.push('Hash');
+  {
+    const hashName = n.replace(/hash ?burger|ozark hash|hash ?plant/g, '');  // exclude strain names (hashburger, ozark hash, hashplant) from hash match
+    if (cat !== 'Flower' && /\bhash\b|bubble hash|brick hash|temple ball|\btemple\b|moroccan hash|full melt|hashhole|hash hole|hashish|charas|dry sift|ice water|piattella/.test(hashName)) attrs.push('Hash');
+  }
   if (/diamonds?/.test(n)) attrs.push('Diamond');
   if (/full spectrum|\bfso\b|\bfsho\b|\bfeco\b|htfse|hcfse/.test(n)) attrs.push('Full Spectrum');
   if (/\brso\b|rick simpson/.test(n)) attrs.push('RSO');
