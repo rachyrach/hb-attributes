@@ -686,7 +686,7 @@ function getAttributes(p) {
     if (/\b(cart|cartridge|cartidge|cardridge|cartigde|cartgde|cartrige|cartdridge|510)\b/.test(n)) attrs.push('Cart');
     {
       const aioName = n.replace(/display/g, '');  // exclude "display" from disp match
-      if (/\baio\b|all-|all in one|disp|ready-to-use|\brtu\b|\bpen\b|traveler|wand|\btank\b|e-?bar|e bar|briq|stiq/.test(aioName)) attrs.push('AIO');
+      if (/\baio\b|all-|all in one|disp|\bready[\s.-]?(?:to|2)?[\s.-]?(?:use|go)\b|\brtu\b|\br2u\b|\brtg\b|vaporizer|vape pen|\bpen\b|traveler|wand|\btank\b|e-?bar|e bar|briq|stiq/.test(aioName)) attrs.push('AIO');
     }
     if (/\bpod\b|reload/.test(n)) attrs.push('Pod');
     // If both Cart and AIO matched, it's a disposable — keep AIO only
