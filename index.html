@@ -583,7 +583,7 @@
     </div>
 
     <div class="filter-section">
-      <div class="filter-label" style="color:#f472b6">Infused</div>
+      <div class="filter-label" style="color:#f472b6">Other</div>
       <div class="filter-chips" id="attr-misc-chips"></div>
     </div>
 
@@ -627,13 +627,13 @@ const ATTR_GROUPS = {
   preroll:  ['Pack','Blunt','Single'],
   extract:  ['Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe'],
   hardware: ['Cart','AIO','Pod'],
-  misc:     ['Infused'],
+  misc:     ['Sample','Infused'],
 };
 
 const ATTR_GROUP_MAP = {};
 Object.entries(ATTR_GROUPS).forEach(([g, attrs]) => attrs.forEach(a => ATTR_GROUP_MAP[a] = g));
 
-const ATTR_ORDER = ['Persy','Deli','Preground','Shake/Trim','Distillate','Cured','Live','Full Spectrum','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe','Cart','AIO','Pod','Infused','Pack','Prepack','Blunt','Single'];
+const ATTR_ORDER = ['Sample','Persy','Deli','Preground','Shake/Trim','Distillate','Cured','Live','Full Spectrum','Hash','Rosin','Resin','Diamond','Kief','RSO','CBD','Syringe','Cart','AIO','Pod','Infused','Pack','Prepack','Blunt','Single'];
 function sortAttrs(attrs) {
   return [...attrs].sort((a, b) => {
     const ai = ATTR_ORDER.indexOf(a), bi = ATTR_ORDER.indexOf(b);
@@ -648,8 +648,12 @@ function getAttributes(p) {
   const name = p.name;  // original case (for LR/CR abbreviation matching)
   const cat = p.category;
   const weight = parseFloat(p.weight) || 0;
+  const price = parseFloat(p.unit_price);
   let attrs = [];
   p.__fallbacks = [];  // reset each call; recomputed fresh
+
+  // SAMPLE (all categories) — price <= $1 OR name contains sample/promo/display
+  if ((!isNaN(price) && price <= 1) || /sample|promo|display/.test(n)) attrs.push('Sample');
 
   // Whether this product has a usable weight value
   const hasWeight = p.weight !== undefined && p.weight !== null && String(p.weight).trim() !== '' && !isNaN(parseFloat(p.weight));
@@ -692,6 +696,10 @@ function getAttributes(p) {
       attrs.push('Cart');
       if (p.__fallbacks) p.__fallbacks.push('Cart');
     }
+    // PACK (Vapes — name-based only, NO weight criteria, NO Single tag)
+    const vapePackRe = /multi|pack|pck|variety|\d+\s?pk|[2-9]\s?x|1[0-9]\s?x|20\s?x|x\s?[2-9]|x\s?1[0-9]|x\s?20|x\s?25/;
+    const vapeSingleOne = /\b1\s?p(?:c?k|ack)\b|(?<![0-9]\s{0,2}x\s{0,2})\b1x\b(?![0-9.])|(?<![0-9]\s{0,2})\bx\s?1\b(?![0-9.])/.test(n);
+    if (!vapeSingleOne && vapePackRe.test(n)) attrs.push('Pack');
   }
 
   // EXTRACTS (all categories)
@@ -1107,7 +1115,7 @@ function buildProductLines() {
   const groups = {};
   RAW_DATA.forEach(p => {
     const allAttrs = getAttributes(p);
-    const groupAttrs = allAttrs.filter(a => a !== 'CBD');  // CBD never affects grouping
+    const groupAttrs = allAttrs.filter(a => a !== 'CBD' && a !== 'Sample');  // CBD & Sample never affect grouping
     const brand = (p.brand_name || '—').trim();
     const cat = (p.category || '—').trim();
     const weight = (p.weight || '—').toString().trim();
