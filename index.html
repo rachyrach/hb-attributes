@@ -795,7 +795,7 @@ function getAttributes(p) {
     if (cat !== 'Flower' && /\bhash\b|bubble hash|brick hash|temple ?ball|moroccan hash|full melt|hashhole|hash hole|hashish|charas|dry sift|ice water|piattella|\bfsho\b/.test(hashName)) attrs.push('Hash');
   }
   if (cat !== 'Flower' && /diamonds?/.test(n)) { attrs.push('Diamond'); p.__fallbacks.push('Diamond'); }
-  if (/full spectrum|htfse|hcfse/.test(n)) attrs.push('Full Spectrum');
+  if (/full spectrum|htfse|hcfse/.test(n)) { attrs.push('Full Spectrum'); p.__fallbacks.push('Full Spectrum'); }
   if (/\brso\b|rick simpson|\bfso\b|\bfeco\b/.test(n)) attrs.push('RSO/FECO');
   if (/\bkief\b|dry sift/.test(n)) attrs.push('Kief');
   if (/\bsyringe\b|\bdart\b/.test(n)) attrs.push('Syringe');
@@ -1217,7 +1217,7 @@ let plSubView = 'all';  // 'all' or 'review'
 
 // Hash is additive (merges across) UNLESS it's the only tag.
 // CBD is excluded from grouping entirely (stripped in buildProductLines), so it's not listed here.
-const ADDITIVE_TAGS = ['Hash', 'Diamond'];
+const ADDITIVE_TAGS = ['Hash', 'Diamond', 'Full Spectrum'];
 
 // ── Merge-override layer ──────────────────────────────────────────────
 // MERGE_OVERRIDES: forward-looking rules that fold an additive tag into a base group.
