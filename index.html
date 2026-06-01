@@ -848,21 +848,18 @@ function getAttributes(p) {
   // MISC
   if (/\bcbd\b|cannabidiol/.test(n)) attrs.push('CBD');
 
-  // BRAND DEFAULT: 710 Labs (Extracts & Vapes) → always Live + Hash + Rosin,
-  // UNLESS the name clearly says cured / resin / distillate / RSO / FECO (then tag normally).
-  // Adds on top of normal tags (Persy, Cart, etc. still layer on).
-  {
-    const brand710 = /710\s*labs/.test((p.brand_name || '').toLowerCase());
-    if (brand710 && (cat === 'Extracts' || cat === 'Vapes') && !/cured|resin|distillate|\brso\b|rick simpson|\bfso\b|\bfeco\b/.test(n)) {
-      attrs.push('Live', 'Hash', 'Rosin');
-    }
-  }
-
-  // DISTILLATE FALLBACK (Extracts & Vapes — both contain an extract; if none matched, assume distillate)
+  // EXTRACT-TYPE FALLBACK (Extracts & Vapes — both contain an extract; if none matched, assume a default).
+  // Brand-specific: 710 Labs falls back to Live + Rosin instead of Distillate.
   const extractTypes = ['Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO/FECO','CBD','Syringe'];
   if ((cat === 'Extracts' || cat === 'Vapes') && !attrs.includes('Infused') && !attrs.some(a => extractTypes.includes(a))) {
-    attrs.push('Distillate');
-    p.__fallbacks.push('Distillate');
+    const brand710 = /710\s*labs/.test((p.brand_name || '').toLowerCase());
+    if (brand710) {
+      attrs.push('Live', 'Rosin');
+      p.__fallbacks.push('Live', 'Rosin');
+    } else {
+      attrs.push('Distillate');
+      p.__fallbacks.push('Distillate');
+    }
   }
 
   // dedupe then sort by canonical order
@@ -1369,6 +1366,7 @@ function generateProductLines() {
   if (!RAW_DATA.length) return;
   plViewActive = true;
   plSubView = 'all';
+  PL_SHOW_PRICE = true;  // default the Show price toggle on when entering product lines
   document.getElementById('search').value = '';
   document.getElementById('search').placeholder = 'Search product lines — brand, category, tags…';
   renderProductLines();
