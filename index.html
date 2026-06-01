@@ -848,6 +848,16 @@ function getAttributes(p) {
   // MISC
   if (/\bcbd\b|cannabidiol/.test(n)) attrs.push('CBD');
 
+  // BRAND DEFAULT: 710 Labs (Extracts & Vapes) → always Live + Hash + Rosin,
+  // UNLESS the name clearly says cured / resin / distillate / RSO / FECO (then tag normally).
+  // Adds on top of normal tags (Persy, Cart, etc. still layer on).
+  {
+    const brand710 = /710\s*labs/.test((p.brand_name || '').toLowerCase());
+    if (brand710 && (cat === 'Extracts' || cat === 'Vapes') && !/cured|resin|distillate|\brso\b|rick simpson|\bfso\b|\bfeco\b/.test(n)) {
+      attrs.push('Live', 'Hash', 'Rosin');
+    }
+  }
+
   // DISTILLATE FALLBACK (Extracts & Vapes — both contain an extract; if none matched, assume distillate)
   const extractTypes = ['Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO/FECO','CBD','Syringe'];
   if ((cat === 'Extracts' || cat === 'Vapes') && !attrs.includes('Infused') && !attrs.some(a => extractTypes.includes(a))) {
@@ -1303,9 +1313,12 @@ function findAdditiveMergeCandidates(lines) {
     // base = the line whose tags ARE the core (fewest tags); extras = the rest
     const core = coreTags(group[0].attrs);
     const coreStr = [...core].sort().join('|');
-    let base = group.find(l => tagSetKey(l.attrs) === coreStr);
+    // base = the line whose tags ARE exactly the core (the survivor). If none exists,
+    // fall back to the fewest-tags line. Compute extras AFTER base is resolved so the
+    // base is never also listed as an extra (which caused a duplicate line in the UI).
+    let base = group.find(l => tagSetKey(l.attrs) === coreStr)
+            || group.slice().sort((a,b)=>a.attrs.length-b.attrs.length)[0];
     const extras = group.filter(l => l !== base);
-    if (!base) { base = group.slice().sort((a,b)=>a.attrs.length-b.attrs.length)[0]; }
     // the differing (additive) tag(s) — union of what extras have beyond base
     const ignoreTags = [...new Set(extras.flatMap(l => l.attrs.filter(a => !core.includes(a))))];
     const ignoreTag = ignoreTags[0] || 'Hash';
