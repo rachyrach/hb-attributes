@@ -648,17 +648,12 @@
     </div>
 
     <div class="filter-section">
-      <div class="filter-label" style="color:#4ade80">Flower</div>
-      <div class="filter-chips" id="attr-flower-chips"></div>
+      <div class="filter-label" style="color:#4ade80">Format</div>
+      <div class="filter-chips" id="attr-format-chips"></div>
     </div>
 
     <div class="filter-section">
-      <div class="filter-label" style="color:#fb923c">Preroll</div>
-      <div class="filter-chips" id="attr-preroll-chips"></div>
-    </div>
-
-    <div class="filter-section">
-      <div class="filter-label" style="color:#a78bfa">Extracts</div>
+      <div class="filter-label" style="color:#a78bfa">Extract Type</div>
       <div class="filter-chips" id="attr-extract-chips"></div>
     </div>
 
@@ -708,17 +703,16 @@
 <script>
 // ── Attribute rule engine ─────────────────────────────────────────────────────
 const ATTR_GROUPS = {
-  flower:   ['Deli','Preground','Shake/Trim','Prepack'],
-  preroll:  ['Pack','Blunt','Single'],
-  extract:  ['Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO/FECO','CBD','Syringe'],
+  format:   ['Deli','Prepack','Shake/Trim','Single','Pack','Syringe'],
+  extract:  ['Infused','Distillate','Cured Resin','Live Resin','Live Rosin','RSO/FECO','Hash','Diamonds','Kief','Full Spectrum'],
   hardware: ['Cart','AIO','Pod'],
-  misc:     ['Sample','Infused'],
+  misc:     ['Sample'],
 };
 
 const ATTR_GROUP_MAP = {};
 Object.entries(ATTR_GROUPS).forEach(([g, attrs]) => attrs.forEach(a => ATTR_GROUP_MAP[a] = g));
 
-const ATTR_ORDER = ['Sample','Persy','Deli','Preground','Shake/Trim','Distillate','Cured','Live','Full Spectrum','Hash','Rosin','Resin','Diamond','Kief','RSO/FECO','CBD','Syringe','Cart','AIO','Pod','Infused','Pack','Prepack','Blunt','Single'];
+const ATTR_ORDER = ['Sample','Deli','Prepack','Shake/Trim','Single','Pack','Syringe','Infused','Distillate','Cured Resin','Live Resin','Live Rosin','RSO/FECO','Hash','Diamonds','Kief','Full Spectrum','Cart','AIO','Pod'];
 function sortAttrs(attrs) {
   return [...attrs].sort((a, b) => {
     const ai = ATTR_ORDER.indexOf(a), bi = ATTR_ORDER.indexOf(b);
@@ -730,139 +724,119 @@ function sortAttrs(attrs) {
 
 function getAttributes(p) {
   const n = p.name.toLowerCase();
-  const name = p.name;  // original case (for LR/CR abbreviation matching)
+  const name = p.name;
   const cat = p.category;
   const weight = parseFloat(p.weight) || 0;
   const price = parseFloat(p.unit_price);
+  const hasWeight = p.weight !== undefined && p.weight !== null && String(p.weight).trim() !== '' && !isNaN(parseFloat(p.weight));
   let attrs = [];
-  p.__fallbacks = [];  // reset each call; recomputed fresh
+  p.__fallbacks = [];
 
-  // SAMPLE (all categories) — price <= $1 OR name contains sample/promo/display
+  // ── PASS 1: Name keyword matching — category-agnostic ────────────────────
+
+  // SAMPLE
   if ((!isNaN(price) && price > 0 && price <= 0.05) || /sample|promo|display/.test(n)) attrs.push('Sample');
 
-  // Whether this product has a usable weight value
-  const hasWeight = p.weight !== undefined && p.weight !== null && String(p.weight).trim() !== '' && !isNaN(parseFloat(p.weight));
+  // FORMAT tags
+  if (!/pre[\s-]?pack/.test(n) && (/deli|bulk/.test(n) || (hasWeight && weight === 1))) attrs.push('Deli');
+  if (/shake|trim/.test(n)) attrs.push('Shake/Trim');
+  if (/pre[\s-]?pack/.test(n)) attrs.push('Prepack');
+  if (/\bsyringe\b|\bdart\b/.test(n)) attrs.push('Syringe');
 
-  // FLOWER — weightless flower skips Deli / Preground / Prepack, but still gets name-based tags (Infused, etc.)
-  if (cat === 'Flower') {
-    if (!/pre[\s-]?pack/.test(n) && (/deli|bulk/.test(n) || (hasWeight && weight === 1))) attrs.push('Deli');
-    if (/preground|pre-ground|ground|ready-to-roll|ready to roll|milled/.test(n)) attrs.push('Preground');
-    if (/shake|trim/.test(n)) attrs.push('Shake/Trim');
-    if (/infused|moonrock|moon rock|snowball|caviar|sun rock|sunrock/.test(n)) attrs.push('Infused');
-  }
-
-  // PREROLLS
-  if (cat === 'Prerolls') {
+  // SINGLE / PACK (non-Vapes, keyword + weight-based)
+  if (cat !== 'Vapes') {
     const packRe = /multi|pack|pck|variety|\d+\s?pk|[2-9]\s?x|1[0-9]\s?x|20\s?x|x\s?[2-9]|x\s?1[0-9]|x\s?20|x\s?25/;
-    // "Quantity of one" indicators → force Single (e.g. 1pk, 1 pack, 1x, x1).
-    // Guarded so weight-bearing forms like "5x1g" or "2 x 1.0g" are NOT caught:
-    //   - the pk/pack forms require the 1 to be a count (not followed by a weight unit)
-    //   - the x forms require no count >=2 before the x, and the 1 not followed by a digit/g
     const singleOne = /\b1\s?p(?:c?k|ack)\b|(?<![0-9]\s{0,2}x\s{0,2})\b1x\b(?![0-9.])|(?<![0-9]\s{0,2})\bx\s?1\b(?![0-9.])/.test(n);
-    const isPack = !singleOne && (packRe.test(n) || weight > 3);
-    attrs.push(isPack ? 'Pack' : 'Single');
-    if (/blunt|blunts|blunto/.test(n)) attrs.push('Blunt');
-    if (/infused|infpr|\binf\b|moonrock|moon rock|snowball|caviar|sun rock|sunrock|tarantula|hashhole|hash hole|resin|rosin|diamond|diamonds|liquid diamond|liquid diamonds|hash|kief|persy|persie/.test(n)) attrs.push('Infused');
+    const isPack = !singleOne && (packRe.test(n) || (cat === 'Prerolls' && weight > 3));
+    if (['Prerolls','Flower','Extracts'].includes(cat)) attrs.push(isPack ? 'Pack' : 'Single');
   }
 
-  // VAPE HARDWARE
+  // PACK for Vapes (name-based only, no Single)
   if (cat === 'Vapes') {
-    // Cart: exact words only (incl. common misspellings)
-    if (/\b(cart|cartridge|cartidge|cardridge|cartigde|cartgde|cartrige|cartdridge|510)\b/.test(n)) attrs.push('Cart');
-    {
-      const aioName = n.replace(/display/g, '');  // exclude "display" from disp match
-      if (/\baio\b|all-|all in one|disp|\bready[\s.-]?(?:to|2)?[\s.-]?(?:use|go)\b|\brtu\b|\br2u\b|\brtg\b|vape pen|\bpen\b|traveler|wand|\btank\b|e-?bar|e bar|briq|stiq/.test(aioName)) attrs.push('AIO');
-    }
-    if (/\bpod\b|reload/.test(n)) attrs.push('Pod');
-    // If both Cart and AIO matched, it's a disposable — keep AIO only
-    if (attrs.includes('Cart') && attrs.includes('AIO')) attrs = attrs.filter(a => a !== 'Cart');
-    // CART FALLBACK: a vape with no hardware tag defaults to Cart
-    if (!attrs.includes('Cart') && !attrs.includes('AIO') && !attrs.includes('Pod')) {
-      attrs.push('Cart');
-      if (p.__fallbacks) p.__fallbacks.push('Cart');
-    }
-    // PACK (Vapes — name-based only, NO weight criteria, NO Single tag)
     const vapePackRe = /multi|pack|pck|variety|\d+\s?pk|[2-9]\s?x|1[0-9]\s?x|20\s?x|x\s?[2-9]|x\s?1[0-9]|x\s?20|x\s?25/;
     const vapeSingleOne = /\b1\s?p(?:c?k|ack)\b|(?<![0-9]\s{0,2}x\s{0,2})\b1x\b(?![0-9.])|(?<![0-9]\s{0,2})\bx\s?1\b(?![0-9.])/.test(n);
     if (!vapeSingleOne && vapePackRe.test(n)) attrs.push('Pack');
   }
 
-  // EXTRACTS (all categories)
-  if (/distillate/.test(n)) attrs.push('Distillate');
-  if (/rosin|90u|90 micron|fresh press|fresh-press|cold cure|cold-cure|cold pressed|cold-pressed|solventless|hash rosin|ice water hash|persy|persie/.test(n)) attrs.push('Rosin');
+  // VAPE HARDWARE (keyword-based, any category)
+  if (/\b(cart|cartridge|cartidge|cardridge|cartigde|cartgde|cartrige|cartdridge|510)\b/.test(n)) attrs.push('Cart');
   {
-    const hashName = n.replace(/hash ?burger|ozark hash|hash ?plant/g, '');  // exclude strain names (hashburger, ozark hash, hashplant) from hash match
-    if (cat !== 'Flower' && /\bhash\b|bubble hash|brick hash|temple ?ball|moroccan hash|full melt|hashhole|hash hole|hashish|charas|dry sift|ice water|piattella|\bfsho\b/.test(hashName)) attrs.push('Hash');
+    const aioName = n.replace(/display/g, '');
+    if (/\baio\b|all-in-one|all in one|disp|\bready[\s.-]?(?:to|2)?[\s.-]?(?:use|go)\b|\brtu\b|\br2u\b|\brtg\b|vape pen|\bpen\b|traveler|wand|\btank\b|e-?bar|e bar|briq|stiq/.test(aioName)) attrs.push('AIO');
   }
-  if (cat !== 'Flower' && /diamonds?/.test(n)) { attrs.push('Diamond'); p.__fallbacks.push('Diamond'); }
-  if (/full spectrum|htfse|hcfse/.test(n)) { attrs.push('Full Spectrum'); p.__fallbacks.push('Full Spectrum'); }
-  if (/\brso\b|rick simpson|\bfso\b|\bfeco\b/.test(n)) attrs.push('RSO/FECO');
-  if (/\bkief\b|dry sift/.test(n)) attrs.push('Kief');
-  if (/\bsyringe\b|\bdart\b/.test(n)) attrs.push('Syringe');
-  if (/persy|persie|personal rosin/.test(n)) attrs.push('Persy');
+  if (/\bpod\b|reload/.test(n)) attrs.push('Pod');
+  if (attrs.includes('Cart') && attrs.includes('AIO')) attrs = attrs.filter(a => a !== 'Cart');
 
-  // ============================================================
-  //  LIVE / CURED / RESIN qualifier logic (runs AFTER Rosin/Hash/Diamond/Distillate)
-  //  Single source of truth for Live, Cured, and texture-inferred Resin tags.
-  // ============================================================
-  const TEXTURE       = /badder|budder|batter|shatter|wax|sauce|sugar|crumble/;
-  const isExtractCat  = ['Vapes', 'Extracts', 'Prerolls'].includes(cat);
-  const hasLive       = /\blive\b/.test(n);
-  const hasCured      = /\bcured\b/.test(n);
-  const hasResinWord  = /resin/.test(n);
-  // Words that suppress the texture→Resin inference (product is rosin/hash/diamond, not resin)
+  // EXTRACT TYPES (keyword-based, any category)
+  if (/distillate/.test(n)) attrs.push('Distillate');
+  {
+    const hashName = n.replace(/hash ?burger|ozark hash|hash ?plant/g, '');
+    if (/\bhash\b|bubble hash|brick hash|temple ?ball|moroccan hash|full melt|hashhole|hash hole|hashish|charas|dry sift|ice water|piattella|\bfsho\b/.test(hashName)) attrs.push('Hash');
+  }
+  if (/diamonds?/.test(n)) attrs.push('Diamonds');
+  if (/full spectrum|htfse|hcfse/.test(n)) attrs.push('Full Spectrum');
+  if (/\brso\b|rick simpson|\bfso\b|\bfeco\b|full extract cannabis oil|full extract/.test(n)) attrs.push('RSO/FECO');
+  if (/\bkief\b|dry sift/.test(n)) attrs.push('Kief');
+  if (/infused|infpr|\binf\b|moonrock|moon rock|snowball|caviar|sun rock|sunrock|tarantula|hashhole|hash hole/.test(n)) attrs.push('Infused');
+
+  // LIVE RESIN / LIVE ROSIN / CURED RESIN compound logic
+  const TEXTURE = /badder|budder|batter|shatter|wax|sauce|sugar|crumble/;
+  const hasLive = /\blive\b/.test(n);
+  const hasCured = /\bcured\b/.test(n);
+  const hasResinWord = /resin/.test(n);
+  const hasRosinWord = /rosin|90u|90 micron|fresh press|fresh-press|cold cure|cold-cure|cold pressed|cold-pressed|solventless|hash rosin|ice water hash/.test(n);
   const resinSuppressor = /rosin|hash|diamond/;
-  const EXTRACT_TAGS  = ['Rosin','Hash','Resin','Diamond','Distillate','Persy','RSO/FECO','Kief'];
-  const hasExtractTag = () => attrs.some(t => EXTRACT_TAGS.includes(t));
-  // Resin applies when "resin" is written, OR a texture is present with no suppressing word
   const textureInferredResin = !hasResinWord && TEXTURE.test(n) && !resinSuppressor.test(n);
   const wantsResin = hasResinWord || textureInferredResin;
-  // When Resin is inferred from a texture word (not the literal "resin"), flag for review
-  const flagResin = () => { if (textureInferredResin) p.__fallbacks.push('Resin'); };
-  if (isExtractCat) {
-    if (hasLive) {
-      attrs.push('Live');
-      if (wantsResin) { attrs.push('Resin'); flagResin(); }
-    }
-    else if (hasCured) {
-      attrs.push('Cured');
-      if (wantsResin) { attrs.push('Resin'); flagResin(); }
-    }
-    // LR / CR abbreviations — only if no extract tag matched yet
-    else if (/\bLR\b|\bL\.R\.?/i.test(name) && !hasExtractTag()) {
-      attrs.push('Live', 'Resin');
-    }
-    else if (/\bCR\b|\bC\.R\.?/i.test(name) && !hasExtractTag()) {
-      attrs.push('Cured', 'Resin');
-    }
-  }
+  const hasCompoundExtract = () => attrs.some(t => ['Live Resin','Live Rosin','Cured Resin'].includes(t));
+  const hasBaseExtract = () => attrs.some(t => ['Distillate','Hash','Diamonds','RSO/FECO','Kief','Full Spectrum'].includes(t));
 
-  // INFUSED (all categories EXCEPT Vapes — 'infused', tarantula, and moonrock/caviar/snowball family)
-  if (cat !== 'Vapes' && /infused|tarantula|moonrock|moon rock|sun rock|sunrock|caviar|snowball/.test(n)) attrs.push('Infused');
-
-  // PREPACK (Flower only, has weight, > 1g, not deli/bulk)
-  if (cat === 'Flower' && hasWeight && weight > 1 && !/deli|bulk/.test(n)) attrs.push('Prepack');
-  // PREPACK (any category — literal 'prepack'/'prepacked'/'prepackaged' in name, likely miscategorized flower)
-  if (/pre[\s-]?pack/.test(n)) attrs.push('Prepack');
-
-  // MISC
-  if (/\bcbd\b|cannabidiol/.test(n)) attrs.push('CBD');
-
-  // EXTRACT-TYPE FALLBACK (Extracts & Vapes — both contain an extract; if none matched, assume a default).
-  // Brand-specific: 710 Labs falls back to Live + Rosin instead of Distillate.
-  const extractTypes = ['Distillate','Cured','Live','Full Spectrum','Persy','Hash','Rosin','Resin','Diamond','Kief','RSO/FECO','CBD','Syringe'];
-  if ((cat === 'Extracts' || cat === 'Vapes') && !attrs.includes('Infused') && !attrs.some(a => extractTypes.includes(a))) {
-    const brand710 = /710\s*labs/.test((p.brand_name || '').toLowerCase());
-    if (brand710) {
-      attrs.push('Live', 'Rosin');
-      p.__fallbacks.push('Live', 'Rosin');
+  if (hasLive) {
+    if (hasRosinWord) {
+      attrs.push('Live Rosin');
+    } else if (wantsResin) {
+      attrs.push('Live Resin');
+      if (textureInferredResin) p.__fallbacks.push('Live Resin');
     } else {
-      attrs.push('Distillate');
-      p.__fallbacks.push('Distillate');
+      // bare "live" — infer Live Resin, flag for review
+      attrs.push('Live Resin');
+      p.__fallbacks.push('Live Resin');
+    }
+  } else if (hasCured) {
+    attrs.push('Cured Resin');
+    if (textureInferredResin) p.__fallbacks.push('Cured Resin');
+  } else if (hasRosinWord && !hasCompoundExtract()) {
+    // rosin without live/cured — infer Live Rosin, flag for review
+    attrs.push('Live Rosin');
+    p.__fallbacks.push('Live Rosin');
+  } else if (!hasCompoundExtract() && !hasBaseExtract()) {
+    // LR / CR abbreviations — only if no extract type matched
+    if (/\bLR\b|\bL\.R\.?/i.test(name)) attrs.push('Live Resin');
+    else if (/\bCR\b|\bC\.R\.?/i.test(name)) attrs.push('Cured Resin');
+  }
+
+  // ── PASS 2: Category-based fallbacks (only fills gaps left by Pass 1) ────
+  const EXTRACT_TYPES = ['Distillate','Cured Resin','Live Resin','Live Rosin','RSO/FECO','Hash','Diamonds','Kief','Full Spectrum','Infused'];
+  const hasExtractType = () => attrs.some(a => EXTRACT_TYPES.includes(a));
+
+  if (cat === 'Vapes') {
+    if (!attrs.includes('Cart') && !attrs.includes('AIO') && !attrs.includes('Pod')) {
+      attrs.push('Cart');
+      p.__fallbacks.push('Cart');
+    }
+    if (!hasExtractType()) {
+      const brand710 = /710\s*labs/.test((p.brand_name || '').toLowerCase());
+      attrs.push(brand710 ? 'Live Rosin' : 'Distillate');
+      p.__fallbacks.push(brand710 ? 'Live Rosin' : 'Distillate');
     }
   }
 
-  // dedupe then sort by canonical order
+  if (cat === 'Extracts' && !hasExtractType()) {
+    const brand710 = /710\s*labs/.test((p.brand_name || '').toLowerCase());
+    attrs.push(brand710 ? 'Live Rosin' : 'Distillate');
+    p.__fallbacks.push(brand710 ? 'Live Rosin' : 'Distillate');
+  }
+
   return sortAttrs([...new Set(attrs)]);
 }
 
@@ -1157,7 +1131,7 @@ function render() {
     bannerHtml += `<div class="review-banner" onclick="showReviewOnly()">
         <div><div class="review-count">${reviewProducts.length}</div>
           <div class="review-label">products have an inferred tag — review recommended</div>
-          <div class="review-sub">Cart/Distillate assumed from category, or Resin inferred from a texture word · click to review</div>
+          <div class="review-sub">Distillate/Cart assumed from category · Live Rosin/Resin inferred from keywords · click to review</div>
         </div><span class="review-arrow">→</span>
       </div>`;
   }
@@ -1214,7 +1188,7 @@ let plSubView = 'all';  // 'all' or 'review'
 
 // Hash is additive (merges across) UNLESS it's the only tag.
 // CBD is excluded from grouping entirely (stripped in buildProductLines), so it's not listed here.
-const ADDITIVE_TAGS = ['Hash', 'Diamond', 'Full Spectrum'];
+const ADDITIVE_TAGS = ['Hash', 'Diamonds', 'Full Spectrum'];
 
 // ── Merge-override layer ──────────────────────────────────────────────
 // MERGE_OVERRIDES: forward-looking rules that fold an additive tag into a base group.
@@ -1250,12 +1224,12 @@ function tagSetKey(attrs) {
 }
 
 function buildProductLines() {
-  // Group by Brand + Category + Weight + exact tag set (CBD ignored for grouping)
+  // Group by Brand + Category + Weight + exact tag set (Sample excluded)
   const groups = {};
   RAW_DATA.forEach(p => {
     const allAttrs = getAttributes(p);
-    if (allAttrs.includes('Sample')) return;  // samples are set aside — not grouped at all
-    let groupAttrs = allAttrs.filter(a => a !== 'CBD');  // CBD ignored for grouping
+    if (allAttrs.includes('Sample')) return;
+    let groupAttrs = allAttrs;
     const brand = (p.brand_name || '—').trim();
     const cat = (p.category || '—').trim();
     const weight = (p.weight || '—').toString().trim();
